@@ -1,0 +1,24 @@
+{
+  "name": "startgg-helper",
+  "version": "0.1.0",
+  "description": "A set of functions and classes useful to communicate with the start.gg API, using any client (YOU NEED TO PROVIDE A CLIENT YOURSELF, SEE README)",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/TwilCynder/startgg-helper.git"
+  },
+  "keywords": [
+    "start.gg",
+    "API",
+    "GraphQL"
+  ],
+  "author": "TwilCynder",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/TwilCynder/startgg-helper/issues"
+  },
+  "homepage": "https://gitlab.com/TwilCynder/startgg-helper#readme"
+}
