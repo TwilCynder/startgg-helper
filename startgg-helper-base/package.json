@@ -20,5 +20,12 @@
   "bugs": {
     "url": "https://gitlab.com/TwilCynder/startgg-helper/issues"
   },
-  "homepage": "https://gitlab.com/TwilCynder/startgg-helper#readme"
+  "homepage": "https://gitlab.com/TwilCynder/startgg-helper#readme",
+  "devDependencies": {
+    "graphql-request": "^7.1.0"
+  },
+  "files": [
+    "!test/**"
+  ],
+  "type": "module"
 }

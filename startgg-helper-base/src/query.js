@@ -1,4 +1,3 @@
-import { Client } from './dummyClientClass.js';
 import { deep_get } from './jsUtil.js';
 import { TimedQuerySemaphore } from './queryLimiter.js'
 
