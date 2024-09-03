@@ -1,4 +1,5 @@
 import { Query } from "../src/query.js";
+import { processData } from "./testUtil.js";
 
 const schema = `
 query EventStandingsQuery($slug: String!) {
@@ -26,6 +27,6 @@ query EventStandingsQuery($slug: String!) {
 
 let query = new Query(schema);
 export async function testShort(client){
-    let result = await query.execute(client, {slug: "tournament/tls-mad-ness-25/event/1v1-ultimate"});
-    console.log(result)
+  let result = await query.execute(client, {slug: "tournament/tls-mad-ness-25/event/1v1-ultimate"});
+  return processData(result, "event");
 }

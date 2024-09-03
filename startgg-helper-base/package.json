@@ -4,7 +4,7 @@
   "description": "A set of functions and classes useful to communicate with the start.gg API, using any client (YOU NEED TO PROVIDE A CLIENT YOURSELF, SEE README)",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js"
   },
   "repository": {
     "type": "git",
@@ -22,10 +22,15 @@
   },
   "homepage": "https://gitlab.com/TwilCynder/startgg-helper#readme",
   "devDependencies": {
-    "graphql-request": "^7.1.0"
+    "@types/jest": "^29.5.12",
+    "graphql-request": "^7.1.0",
+    "jest": "^29.7.0"
   },
   "files": [
     "!test/**"
   ],
-  "type": "module"
+  "type": "module",
+  "jest": {
+    "transform": {}
+  }
 }
