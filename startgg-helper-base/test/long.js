@@ -13,7 +13,7 @@ const schema = `
     }
 `
 
-let query = new Query(schema);
+let query = new Query(schema, 3);
 export async function testLong(client){
     try {
         let limiter = new StartGGDelayQueryLimiter();

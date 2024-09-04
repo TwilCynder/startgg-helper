@@ -25,7 +25,7 @@ query EventStandingsQuery($slug: String!) {
 }
 `
 
-let query = new Query(schema);
+let query = new Query(schema, 3);
 export async function testShort(client){
   let result = await query.execute(client, {slug: "tournament/tls-mad-ness-25/event/1v1-ultimate"});
   return processData(result, "event");
