@@ -1,11 +1,13 @@
 import { makeClient } from "./common.js";
 import { testLong } from "./long.js";
+import { testPaginated } from "./paginated.js";
 import { testShort } from "./short.js";
 import { ArgumentsManager } from "@twilcynder/arguments-parser"
 
-let {short, long} = new ArgumentsManager()
+let {short, long, paginated} = new ArgumentsManager()
     .addSwitch(["-s", "--short"], {})
     .addSwitch(["-l", "--long"], {})
+    .addSwitch(["-p", "--paginated"], {})
     .enableHelpParameter()
     .parseProcessArguments()
 
@@ -19,4 +21,9 @@ if (short){
 if (long){
     console.log("Testing : 100ish queries, with delay-based limiter");
     console.log(await testLong(client)); 
+}
+
+if (paginated){
+    console.log("Testing : paginated query");
+    console.log(await testPaginated(client)); 
 }
