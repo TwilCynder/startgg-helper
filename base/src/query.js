@@ -5,7 +5,7 @@ import { TimedQuerySemaphore } from './queryLimiter.js'
  * Dummy client class that's only used in the JSDoc. 
  * In a real use case, the user will have their own client class.
  */
-export class Client {
+class Client {
     request(){}
 }
 
