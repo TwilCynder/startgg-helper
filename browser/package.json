@@ -1,0 +1,27 @@
+{
+  "name": "startgg-helper-browser",
+  "version": "1.0.0",
+  "description": "A set of functions and classes useful to communicate with the start.gg API from a web app",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/TwilCynder/startgg-helper.git"
+  },
+  "keywords": [
+    "GraphQL",
+    "start.gg",
+    "API"
+  ],
+  "author": "TwilCynder",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/TwilCynder/startgg-helper/issues"
+  },
+  "homepage": "https://gitlab.com/TwilCynder/startgg-helper#readme",
+  "dependencies": {
+    "startgg-helper": "^1.0.2"
+  }
+}
