@@ -11,21 +11,29 @@ export async function loadQuery(url, maxTries = null){
     }
 }
 
-function requestStartGG(schema, variables, token){
-    return fetch('https://api.start.gg/gql/alpha', {         
-        method: 'POST',         
-        headers: {             
-            'Content-Type': 'application/json',             
-            'accept' : 'application/json',             
-            'Authorization' : token         
+async function requestStartGG(schema, variables, token){
+    const response = await fetch('https://api.start.gg/gql/alpha', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'accept': 'application/json',
+            'Authorization': token
         },
         body: JSON.stringify({
             'query': schema,
-            'variables' : variables
-        }),  
-        
-    })     
-    .then((response) => response.json()) 
+            'variables': variables
+        }),
+    });
+    const json = await response.json();
+    if (!json){
+        throw "Empty response"
+    }
+    if (!json.success){
+        throw new Error("GraphQL Error (code" + response.status + ")" + {response, request: {
+            schema, variables
+        }})
+    }
+    return json.data;
 }
 
 export class SGGHelperClient {
