@@ -1,3 +1,1 @@
-import {Query} from "../main.js"
-
-console.log(new Query);
+import {Query} from "./dist/bundle.js"
