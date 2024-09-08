@@ -11,6 +11,18 @@ export async function loadQuery(url, maxTries = null){
     }
 }
 
+class GraphQLError extends Error {
+    /**
+     * 
+     * @param {Response} response 
+     * @param {{schema: {}, variables: {}}} request 
+     */
+    constructor(response, request){
+        super("Received code " + response.status + " | " + JSON.stringify(request));
+        this.name = "GraphQLError"
+    }
+}
+
 async function requestStartGG(schema, variables, token){
     const response = await fetch('https://api.start.gg/gql/alpha', {
         method: 'POST',
@@ -28,10 +40,8 @@ async function requestStartGG(schema, variables, token){
     if (!json){
         throw "Empty response"
     }
-    if (!json.success){
-        throw new Error("GraphQL Error (code" + response.status + ")" + {response, request: {
-            schema, variables
-        }})
+    if (json.success === false){
+        throw new GraphQLError(response, {schema, variables});
     }
     return json.data;
 }
