@@ -17,9 +17,11 @@ class GraphQLError extends Error {
      * @param {Response} response 
      * @param {{schema: {}, variables: {}}} request 
      */
-    constructor(response, request){
+    constructor(response, request, resBody){
         super("Received code " + response.status + " | " + JSON.stringify(request));
         this.name = "GraphQLError"
+        this.response = response;
+        this.resBody = resBody;
     }
 }
 
@@ -41,7 +43,7 @@ async function requestStartGG(schema, variables, token){
         throw "Empty response"
     }
     if (json.success === false){
-        throw new GraphQLError(response, {schema, variables});
+        throw new GraphQLError(response, {schema, variables}, json);
     }
     return json.data;
 }

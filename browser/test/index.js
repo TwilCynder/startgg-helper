@@ -1,6 +1,11 @@
 import {Query, SGGHelperClient} from "./dist/bundle.js"
 import { testPaginated } from "./testPaginated.js";
 
-let client = new SGGHelperClient("Bearer a3c0cfb086c57be484694e743b788d03");
+let client = new SGGHelperClient("");
 
-console.log(await testPaginated(client));
+try {
+    await testPaginated(client)
+} catch (err){
+    console.log("ALLO")
+    console.log(err.resBody);
+}
