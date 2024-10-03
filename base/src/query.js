@@ -2,6 +2,10 @@ import { GraphQLClient } from 'graphql-request';
 import { deep_get, deep_set } from './jsUtil.js';
 import { TimedQuerySemaphore } from './queryLimiter.js'
 
+function isConnection(val){
+    return val instanceof Object && val.nodes instanceof Array
+}
+
 export class Query {
     #schema;
     #maxTries;
@@ -85,6 +89,87 @@ export class Query {
     }
 
     /**
+     * Executes a query containing a paginated collection (of a *Connection type) repeatedly, increasing the page index each time until nothing is returned, returning an aggregation of all the pages.
+     * @param {GraphQLClient} client 
+     * @param {{[varName: string]: value}} params 
+     * @param {string} connectionPathInQuery JSON path to the paginated collection that must aggregated in the query (JSON path : property names separated by dots)
+     * @param {TimedQuerySemaphore} limiter 
+     * @param {{pageParamName?: string, perPageParamName?: string, perPage?: number, delay?: number, maxElements?: number, includeWholeQuery?: number}} config 
+     * @param {boolean} silentErrors 
+     * @param {number} maxTries 
+     * @returns 
+     */
+    async executePaginated(client, params, connectionPathInQuery, limiter = null, config = {}, silentErrors = false, maxTries = null){
+        let result = [];
+        //delay = null, perPage = undefined, pageParamName = "page", perPageParamName = "perPage", silentErrors = false, maxTries = null
+        const pageParamName = config.pageParamName ?? "page";
+        const perPageParamName = config.perPageParamName ?? "perPage";
+        const perPage = config.perPage ?? params[perPageParamName];
+        const delay = config.delay;
+        const maxElements = config.maxElements ?? undefined; //eliminating null
+
+        let currentPage = 1;
+
+        params = Object.assign({}, params);
+        params[pageParamName] = currentPage;
+        params[perPageParamName] = perPage;
+
+        let data;
+        while (true){
+            if (result.length >= maxElements) break;
+
+            console.log("Querying page", params[pageParamName], `(${result.length} elements loaded)`);
+            data = await this.execute(client, params, limiter, silentErrors, maxTries);
+
+            if (!data) throw (this.#getLog("error", params) ?? "Request failed.") + "(in paginated execution, at page " + params[pageParamName] + ")";
+
+            let connection = deep_get(data, connectionPathInQuery);
+
+            if (!connection) {
+                console.warn(`The given path ${connectionPathInQuery} does not point to anything.`);
+                return null;
+            }
+
+            if (!isConnection(connection)) throw "The given path does not point to a connection type"
+            console.log(connection);
+
+            let localResult = connection.nodes;
+            if (connection.pageInfo && connection.pageInfo.totalPages){
+                let totalPages = connection.pageInfo.totalPages;
+                if (currentPage >= totalPages) {
+                    result = result.concat(localResult);
+                    break;
+                }
+            } else {
+                if (localResult.length < 1) break;
+            }
+
+            result = result.concat(localResult);
+            currentPage++;
+            params[pageParamName] = currentPage;
+
+            if (delay)
+                await new Promise(r => setTimeout(r, delay));
+        }
+
+        if (maxElements) result = result.slice(0, maxElements);
+
+        if (config.includeWholeQuery == Query.IWQModes.DUPLICATE || config.includeWholeQuery == Query.IWQModes.INLINE){
+            deep_set(data, connectionPathInQuery + ".nodes", result);
+        } else if (config.includeWholeQuery == Query.IWQModes.OUT){
+            deep_set(data, connectionPathInQuery + ".nodes", null);
+        }
+
+        if (config.includeWholeQuery == Query.IWQModes.DUPLICATE || config.includeWholeQuery == Query.IWQModes.OUT){
+            return [result, data]
+        } else if (config.includeWholeQuery == Query.IWQModes.INLINE){
+            return data;
+        }
+
+        return result;
+    }
+
+    /**
      * Executes a query containing a paginated collection, repeatedly, increasing the page index each time until nothing is returned, returning an aggregation of all the pages.
      * @param {GraphQLClient} client 
      * @param {{[varName: string]: value}} params 
@@ -95,7 +180,7 @@ export class Query {
      * @param {number} maxTries 
      * @returns 
      */
-    async executePaginated(client, params, collectionPathInQuery, limiter = null, config = {}, silentErrors = false, maxTries = null){
+    async executePaginatedLegacy(client, params, collectionPathInQuery, limiter = null, config = {}, silentErrors = false, maxTries = null){
         let result = [];
         //delay = null, perPage = undefined, pageParamName = "page", perPageParamName = "perPage", silentErrors = false, maxTries = null
         const pageParamName = config.pageParamName ?? "page";

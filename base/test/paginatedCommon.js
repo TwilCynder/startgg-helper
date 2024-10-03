@@ -7,10 +7,13 @@ export const schema = `
                 numAttendees
             }
             sets(page: $page, perPage: $perPage){
+                pageInfo {
+                    totalPages
+                }
                 nodes {
                     id
                 }
             }
-        }		
+        }
     }
 `
