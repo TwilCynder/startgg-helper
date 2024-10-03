@@ -1,13 +1,6 @@
-import { deep_get } from './jsUtil.js';
+import { GraphQLClient } from 'graphql-request';
+import { deep_get, deep_set } from './jsUtil.js';
 import { TimedQuerySemaphore } from './queryLimiter.js'
-
-/**
- * Dummy client class that's only used in the JSDoc. 
- * In a real use case, the user will have their own client class.
- */
-class Client {
-    request(){}
-}
 
 export class Query {
     #schema;
@@ -44,7 +37,7 @@ export class Query {
 
     /**
      * 
-     * @param {Client} client 
+     * @param {GraphQLClient} client 
      * @param {{[varName: string]: value}} params 
      * @param {number} tries How many tries in are we 
      * @param {TimedQuerySemaphore} limiter 
@@ -73,7 +66,7 @@ export class Query {
 
     /**
      * Executes the query with given parameters and client
-     * @param {Client} client 
+     * @param {GraphQLClient} client 
      * @param {{[varName: string]: value}} params 
      * @param {TimedQuerySemaphore} limiter 
      * @param {boolean} silentErrors 
@@ -84,29 +77,43 @@ export class Query {
         return await this.#execute_(client, params, 0, limiter, silentErrors, maxTries);
     }
 
+    static IWQModes = {
+        DONT: 0,
+        INLINE: 1,
+        DUPLICATE: 2,
+        OUT: 3
+    }
+
     /**
      * Executes a query containing a paginated collection, repeatedly, increasing the page index each time until nothing is returned, returning an aggregation of all the pages.
-     * @param {Client} client 
+     * @param {GraphQLClient} client 
      * @param {{[varName: string]: value}} params 
      * @param {string} collectionPathInQuery JSON path to the paginated collection that must aggregated in the query (JSON path : property names separated by dots)
      * @param {TimedQuerySemaphore} limiter 
-     * @param {number} delay Adds a delay between calls (does not interact with the limiter)
-     * @param {string} pageParamName Name of the query parameter that must be updated with a page index for each query
+     * @param {{pageParamName?: string, perPageParamName?: string, perPage?: number, delay?: number, maxElements?: number, includeWholeQuery?: number}} config 
      * @param {boolean} silentErrors 
      * @param {number} maxTries 
      * @returns 
      */
-    async executePaginated(client, params, collectionPathInQuery, limiter = null, delay = null, perPage = undefined, pageParamName = "page", perPageParamName = "perPage", silentErrors = false, maxTries = null){
+    async executePaginated(client, params, collectionPathInQuery, limiter = null, config = {}, silentErrors = false, maxTries = null){
         let result = [];
-
+        //delay = null, perPage = undefined, pageParamName = "page", perPageParamName = "perPage", silentErrors = false, maxTries = null
+        const pageParamName = config.pageParamName ?? "page";
+        const perPageParamName = config.perPageParamName ?? "perPage";
+        const perPage = config.perPage ?? params[perPageParamName];
+        const delay = config.delay;
+        const maxElements = config.maxElements ?? undefined; //eliminating null
 
         params = Object.assign({}, params);
         params[pageParamName] = 1;
-        params[perPageParamName] = perPage ?? params[perPageParamName];
+        params[perPageParamName] = perPage;
 
+        let data;
         while (true){
+            if (result.length >= maxElements) break;
+
             console.log("Querying page", params[pageParamName], `(${result.length} elements loaded)`);
-            let data = await this.execute(client, params, limiter, silentErrors, maxTries);
+            data = await this.execute(client, params, limiter, silentErrors, maxTries);
 
             if (!data) throw (this.#getLog("error", params) ?? "Request failed.") + "(in paginated execution, at page " + params[pageParamName] + ")";
 
@@ -126,6 +133,20 @@ export class Query {
 
             if (delay)
                 await new Promise(r => setTimeout(r, delay));
+        }
+
+        if (maxElements) result = result.slice(0, maxElements);
+
+        if (config.includeWholeQuery == Query.IWQModes.DUPLICATE || config.includeWholeQuery == Query.IWQModes.INLINE){
+            deep_set(data, collectionPathInQuery, result);
+        } else if (config.includeWholeQuery == Query.IWQModes.OUT){
+            deep_set(data, collectionPathInQuery, null);
+        }
+
+        if (config.includeWholeQuery == Query.IWQModes.DUPLICATE || config.includeWholeQuery == Query.IWQModes.OUT){
+            return [result, data]
+        } else if (config.includeWholeQuery == Query.IWQModes.INLINE){
+            return data;
         }
 
         return result;
