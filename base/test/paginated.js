@@ -1,17 +1,6 @@
 import { Query } from "../src/query.js";
-import { StartGGDelayQueryLimiter } from "../src/queryLimiter.js";
 
-const schema = `
-    query Sets($slug: String, $page: Int, $perPage: Int) {
-        event(slug: $slug){
-            sets(page: $page, perPage: $perPage){
-                nodes {
-                    id
-                }
-            }
-        }		
-    }
-`
+import { schema } from "./paginatedCommon.js";
 
 let query = new Query(schema, 3);
 export async function testPaginated(client){
