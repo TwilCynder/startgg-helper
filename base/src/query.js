@@ -130,8 +130,7 @@ export class Query {
                 return null;
             }
 
-            if (!isConnection(connection)) throw "The given path does not point to a connection type"
-            console.log(connection);
+            if (!isConnection(connection)) throw "The given path does not point to a connection type";
 
             let localResult = connection.nodes;
             if (connection.pageInfo && connection.pageInfo.totalPages){
