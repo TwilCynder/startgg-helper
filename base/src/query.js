@@ -1,4 +1,3 @@
-import { GraphQLClient } from 'graphql-request';
 import { deep_get, deep_set } from './jsUtil.js';
 import { TimedQuerySemaphore } from './queryLimiter.js'
 

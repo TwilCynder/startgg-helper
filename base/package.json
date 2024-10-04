@@ -1,6 +1,6 @@
 {
   "name": "startgg-helper",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A set of functions and classes useful to communicate with the start.gg API, using any client (YOU NEED TO PROVIDE A CLIENT YOURSELF, SEE README)",
   "main": "main.js",
   "scripts": {
