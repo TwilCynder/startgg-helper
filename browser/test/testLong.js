@@ -30,6 +30,7 @@ export async function testLong(client){
         }
         let result = await Promise.all(promises);
         limiter.stop();
+        client.stop();
         return result;
     } catch (err){
         console.error(err);

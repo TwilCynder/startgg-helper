@@ -41,31 +41,6 @@ class GraphQLError extends Error {
     }
 }
 
-async function requestStartGG(schema, variables, token){
-    const response = await fetch('https://api.start.gg/gql/alpha', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'accept': 'application/json',
-            'Authorization': token
-        },
-        body: JSON.stringify({
-            'query': schema,
-            'variables': variables
-        }),
-    });
-    const json = await response.json();
-    if (!json){
-        throw "Empty response"
-    }
-    if (!json.data){
-        throw new GraphQLError(response, {schema, variables}, json);
-    }
-
-    return json.data;
-    
-}
-
 export class SGGHelperClient {
     #token;
 
@@ -77,7 +52,83 @@ export class SGGHelperClient {
         this.#token = token;
     }
 
-    request(schema, variables){
-        return requestStartGG(schema, variables, this.#token);
+    async request(schema, variables){
+        const response = await fetch('https://api.start.gg/gql/alpha', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'accept': 'application/json',
+                'Authorization': this.#token
+            },
+            body: JSON.stringify({
+                'query': schema,
+                'variables': variables
+            }),
+        });
+        const json = await response.json();
+        if (!json){
+            throw "Empty response"
+        }
+        if (!json.data){
+            throw new GraphQLError(response, {schema, variables}, json);
+        }
+    
+        return json.data;
+    }
+}
+
+export class RateLimitingSGGHelperClient extends SGGHelperClient {
+    #pauseTimer;
+    #pausePromise;
+    #pauseDelay = 60000;
+    //bool paused = !!pauseTimer;
+
+    isPaused(){
+        return !!this.#pausePromise;
+    }
+
+    pause(){
+        if (this.isPaused()){
+            clearTimeout(this.#pauseTimer);
+        } else {
+            let resolve, reject;
+            let promise = new Promise((resolve_, reject_) => {
+                resolve = resolve_;
+                reject = reject_;
+            })
+            this.#pausePromise = {promise, resolve, reject};
+        }
+        this.#pauseTimer = setTimeout(() => {
+            this.#unpause();
+        }, this.#pauseDelay);
+    }
+
+    #unpause(){
+        if (this.isPaused()){
+            this.#pausePromise.resolve();
+            this.#pauseTimer = undefined;
+        }
+    }
+
+    async request(schema, variables){
+        console.log(this.#pausePromise);
+        if (this.isPaused()) await this.#pausePromise;
+        
+        try {
+            return await super.request(schema, variables);
+        } catch (err){
+            if (err instanceof GraphQLError){
+                if (err.response.status == 429){
+                    //IT WAS A RATE LIMIT ERROR
+                    console.warn("Rate limit exceeded. Pausing this client for 60 seconds. The caller should initiate a retry.")
+                    this.pause();
+                }
+            }
+            throw err;
+        }
+    }
+
+    stop(){
+        clearTimeout(this.#pauseTimer);
     }
 }

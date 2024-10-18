@@ -1,4 +1,4 @@
-import {Query, SGGHelperClient} from "./dist/bundle.js"
+import {Query, RateLimitingSGGHelperClient, SGGHelperClient} from "./dist/bundle.js"
 import { testLong } from "./testLong.js";
 import { testPaginated } from "./testPaginated.js";
 
@@ -16,15 +16,15 @@ try {
 console.log("Token :", token)
 
 if (token){
-    let client = new SGGHelperClient(token);
+    let client = new RateLimitingSGGHelperClient(token);
 
     try {
-        await testPaginated(client);
-        await testLong(client);
-        console.log("finito")
+        //await testPaginated(client);
+        let res = await testLong(client);
+        console.log("finito", res);
     } catch (err){
         console.error("ERROR")
-        console.log(err);
+        console.error(err);
     }
 
 }
