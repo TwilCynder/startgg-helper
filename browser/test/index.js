@@ -1,11 +1,27 @@
 import {Query, SGGHelperClient} from "./dist/bundle.js"
 import { testPaginated } from "./testPaginated.js";
 
-let client = new SGGHelperClient("abcd");
-
+let token;
 try {
-    await testPaginated(client)
+    token = await fetch("./settings.json").then(buf => buf.json()).then(res => {
+        if (!res) throw "File doesn't contain config";
+        if (!res.token) throw "Token not found in config";
+        return res.token;
+    })
 } catch (err){
-    console.log("ALLO")
-    console.log(err.resBody);
+    console.error("Could not load settings from settings.json. Reason :", err);
+}
+
+console.log("Token :", token)
+
+if (token){
+    let client = new SGGHelperClient(token);
+
+    try {
+        await testPaginated(client)
+    } catch (err){
+        console.error("ERROR")
+        console.log(err);
+    }
+
 }
