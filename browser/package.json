@@ -1,6 +1,6 @@
 {
   "name": "startgg-helper-browser",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A set of functions and classes useful to communicate with the start.gg API from a web app",
   "main": "main.js",
   "scripts": {

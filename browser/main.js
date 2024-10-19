@@ -111,7 +111,6 @@ export class RateLimitingSGGHelperClient extends SGGHelperClient {
     }
 
     async request(schema, variables){
-        console.log(this.#pausePromise);
         if (this.isPaused()) await this.#pausePromise;
         
         try {
