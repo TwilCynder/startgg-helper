@@ -9,7 +9,7 @@ function processObjectPath(path){
         }
     }
     return path;
-}
+}//jsutil
 
 /**
  * 
@@ -41,4 +41,54 @@ export function deep_set(obj, path, value){
     }
     obj[finalName] = value;
     return true;
+}
+
+let currentID = 1;
+export function generateUniqueID(){
+    return currentID++;
+}//jsutil
+
+/**
+ * 
+ * @param {(() => any)[]} fArray 
+ */
+export function fResultsArray(fArray){
+    let result = [];
+    for (let f of fArray){
+        let res = f();
+        if (res !== undefined){
+            result.push(res);
+        }
+    }
+
+    return result;
+} 
+
+/**
+ * 
+ * @param  {...(() => any)} functions 
+ */
+export function fResults(...functions){
+    return fResultsArray(functions);
+}
+
+/**
+ * 
+ * @param {any} data 
+ * @param {boolean} pretty 
+ */
+export function toJSON(data, pretty){
+    return JSON.stringify(data, null, pretty ? 4 : undefined);
+}//jsutil
+
+export function isNumber(n){
+    return typeof n == "number";
+}
+
+/**
+ * 
+ * @param {number | Date | string} d 
+ */
+export function toUNIXTimestamp(d){
+    return isNaN(d) ? new Date(d).getTime() / 1000 : d;
 }

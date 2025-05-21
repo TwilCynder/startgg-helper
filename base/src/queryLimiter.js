@@ -1,16 +1,12 @@
 //i am a god of JS
 
-/**
- * Dummy client class that's only used in the JSDoc. 
- * In a real use case, the user will have their own client class.
- */
-class Client {
-    request(){}
-}
+//voir la diff avec la version de sgghelper ?
+
+import { GraphQLClient } from "graphql-request";
 
 export class TimedQuerySemaphore {
     /**
-     * @typedef {{client: Client, schema: string, 
+     * @typedef {{client: GraphQLClient, schema: string, 
      *  params: {[varName: string]: value}, 
      *  resolve: (value: any) => void, 
      *  reject: (reason?: any) => void}
@@ -47,7 +43,7 @@ export class TimedQuerySemaphore {
     }
 
     /**
-     * @param {Client} client 
+     * @param {GraphQLClient} client 
      * @param {string} schema 
      * @param {{[varName: string]: value}} params 
      * @returns 
@@ -74,7 +70,7 @@ export class TimedQuerySemaphore {
 
     /**
      * Executes the given query with the given GraphQL Client
-     * @param {Client} client 
+     * @param {GraphQLClient} client 
      * @param {string} schema 
      * @param {{[varName: string]: value}} params 
      * @returns 
