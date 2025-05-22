@@ -1,6 +1,6 @@
 import { Query } from "../src/query.js";
 import { StartGGDelayQueryLimiter } from "../src/queryLimiter.js";
-import { getDoubleEliminationUpsetFactorFromSeeds, getDoubleEliminationUpsetFactorFromSet } from "../src/tournamentUtil.js";
+import { getDoubleEliminationUpsetFactorFromSet } from "../src/tournamentUtil.js";
 
 const schema = `
     query Sets($slug: String, $page: Int, $perPage: Int) {
@@ -46,25 +46,27 @@ export async function testUpsets(client){
     try {
 
         let promises = [];
-        for (let i = 0; i < 2; i++){
+        for (let i = 1; i < 3; i++){
             for (let j = 0; j < 2; j++){
                 promises.push(query.execute(client, {
                     slug: `tournament/stock-o-clock-${i}/event/1v1-ultimate`,
                     page: j,
-                    perPage: 10
+                    perPage: 2
                 }, limiter));
             }
         }
         let result = await Promise.all(promises);
 
+        let upsets = []
+
         for (let event of result){
             if (!event || !event.event) continue;
             for (let set of event.event.sets.nodes){
-                console.log(getDoubleEliminationUpsetFactorFromSet(set));
+                upsets.push(getDoubleEliminationUpsetFactorFromSet(set));
             }
         }
 
-        return result;
+        return upsets;
     } catch (err){
         console.error(err);
         return null;

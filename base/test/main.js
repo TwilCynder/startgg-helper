@@ -41,5 +41,8 @@ if (paginatedComplex){
 
 if (upsets){
     console.log("Testing : upsets calculation");
-    await testUpsets(client);
+    let res = await testUpsets(client);
+    for (let upset of res){
+        console.log(upset);
+    }
 }
