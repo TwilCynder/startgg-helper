@@ -1,5 +1,5 @@
 export * from "./src/query.js"
 export * from "./src/queryLimiter.js"
 export * from "./src/jsUtil.js"
-export * from "./src/tournamentUtil"
+export * from "./src/tournamentUtil.js"
 export * from "./src/smashggData.js"
