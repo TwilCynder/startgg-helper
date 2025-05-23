@@ -3,6 +3,10 @@
   "version": "2.1.1",
   "description": "A set of functions and classes useful to communicate with the start.gg API, using any client (YOU NEED TO PROVIDE A CLIENT YOURSELF, SEE README)",
   "main": "main.js",
+    "files": [
+    "main.js",
+    "/src"
+  ],
   "scripts": {
     "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --silent"
   },
