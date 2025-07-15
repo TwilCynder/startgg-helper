@@ -1,9 +1,18 @@
 {
   "name": "startgg-helper",
-  "version": "2.1.1",
+  "version": "2.2.1",
   "description": "A set of functions and classes useful to communicate with the start.gg API, using any client (YOU NEED TO PROVIDE A CLIENT YOURSELF, SEE README)",
   "main": "main.js",
-    "files": [
+  "module": "main.js",
+  "exports": {
+    ".": {
+      "default": "./main.js"
+    },
+    "./util": {
+      "default": "./src/jsUtil.js"
+    }
+  },
+  "files": [
     "main.js",
     "/src"
   ],

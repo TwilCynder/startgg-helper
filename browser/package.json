@@ -22,7 +22,7 @@
   },
   "homepage": "https://gitlab.com/TwilCynder/startgg-helper#readme",
   "dependencies": {
-    "startgg-helper": "^2.0.0"
+    "startgg-helper": "^2.2.1"
   },
   "type": "module",
   "devDependencies": {

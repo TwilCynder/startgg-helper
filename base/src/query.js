@@ -134,7 +134,7 @@ export class Query {
             let localResult = connection.nodes;
             if (connection.pageInfo && connection.pageInfo.totalPages){
                 let totalPages = connection.pageInfo.totalPages;
-                if (currentPage >= totalPages) {
+                if (!totalPages || currentPage >= totalPages) {
                     result = result.concat(localResult);
                     break;
                 }

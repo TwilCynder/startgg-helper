@@ -2,11 +2,9 @@
 
 //voir la diff avec la version de sgghelper ?
 
-import { GraphQLClient } from "graphql-request";
-
 export class TimedQuerySemaphore {
     /**
-     * @typedef {{client: GraphQLClient, schema: string, 
+     * @typedef {{client: any, schema: string, 
      *  params: {[varName: string]: value}, 
      *  resolve: (value: any) => void, 
      *  reject: (reason?: any) => void}
@@ -43,7 +41,7 @@ export class TimedQuerySemaphore {
     }
 
     /**
-     * @param {GraphQLClient} client 
+     * @param {any} client 
      * @param {string} schema 
      * @param {{[varName: string]: value}} params 
      * @returns 
@@ -70,7 +68,7 @@ export class TimedQuerySemaphore {
 
     /**
      * Executes the given query with the given GraphQL Client
-     * @param {GraphQLClient} client 
+     * @param {any} client 
      * @param {string} schema 
      * @param {{[varName: string]: value}} params 
      * @returns 
