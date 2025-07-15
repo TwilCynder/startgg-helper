@@ -1,5 +1,5 @@
-import { Query } from "./dist/bundle.js";
-import { StartGGDelayQueryLimiter } from "./dist/bundle.js";
+import { Query } from "../dist/bundle.js";
+import { StartGGDelayQueryLimiter } from "../dist/bundle.js";
 
 const schema = `
     query Sets($slug: String, $page: Int, $perPage: Int) {
@@ -14,9 +14,9 @@ const schema = `
 `
 
 let query = new Query(schema, 3);
-export async function testLong(client){
+export async function testLong(client, limiter){
     try {
-        let limiter = new StartGGDelayQueryLimiter();
+        limiter = limiter || new StartGGDelayQueryLimiter();
 
         let promises = [];
         for (let i = 0; i < 50; i++){
@@ -30,7 +30,6 @@ export async function testLong(client){
         }
         let result = await Promise.all(promises);
         limiter.stop();
-        client.stop();
         return result;
     } catch (err){
         console.error(err);
