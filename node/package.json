@@ -14,7 +14,8 @@
   },
   "files": [
     "main.js",
-    "client.js"
+    "client.js",
+    "jsUtil.js"
   ],
   "scripts": {
     "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --silent"
