@@ -7,7 +7,8 @@ export async function testPaginatedComplex(client){
     let result = await query.executePaginated(client, {slug: "tournament/tls-mad-ness-25/event/1v1-ultimate"}, "event.sets", null, {
         perPage: 10,
         includeWholeQuery: Query.IWQModes.INLINE,
-        maxElements: 100
+        maxElements: 100, 
+        callback: (localresult, i) => {console.log(localresult, i); return localresult}
     });
     return result;
 }

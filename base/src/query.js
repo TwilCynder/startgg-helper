@@ -93,7 +93,7 @@ export class Query {
      * @param {{[varName: string]: value}} params 
      * @param {string} connectionPathInQuery JSON path to the paginated collection that must aggregated in the query (JSON path : property names separated by dots)
      * @param {TimedQuerySemaphore} limiter 
-     * @param {{pageParamName?: string, perPageParamName?: string, perPage?: number, delay?: number, maxElements?: number, includeWholeQuery?: number}} config 
+     * @param {{pageParamName?: string, perPageParamName?: string, perPage?: number, delay?: number, maxElements?: number, includeWholeQuery?: number, callback: (localResult: T[], page: number, totalPages: number) => T[]?}} config 
      * @param {boolean} silentErrors 
      * @param {number} maxTries 
      * @returns 
@@ -132,14 +132,26 @@ export class Query {
             if (!isConnection(connection)) throw "The given path does not point to a connection type";
 
             let localResult = connection.nodes;
+
             if (connection.pageInfo && connection.pageInfo.totalPages){
                 let totalPages = connection.pageInfo.totalPages;
                 if (!totalPages || currentPage >= totalPages) {
+                    if (config.callback){
+                        let cbRes = config.callback(localResult, currentPage);
+                        if (cbRes) break;
+                        localResult = cbRes;
+                    }
                     result = result.concat(localResult);
                     break;
                 }
             } else {
                 if (localResult.length < 1) break;
+            }
+
+            if (config.callback){
+                let cbRes = config.callback(localResult, currentPage);
+                if (!cbRes) break;
+                localResult = cbRes;
             }
 
             result = result.concat(localResult);
