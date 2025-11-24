@@ -36,7 +36,7 @@ if (paginated){
 if (paginatedComplex){
     console.log("Testing : paginated query");
     let res = await testPaginatedComplex(client);
-    console.log(res, deep_get(res, "event.sets.nodes.length")); 
+    console.log(res, deep_get(res, "event.sets.nodes")); 
 }
 
 if (upsets){
