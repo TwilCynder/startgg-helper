@@ -1,6 +1,6 @@
 {
   "name": "startgg-helper-node",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "description": "A set of functions and classes useful to communicate with the start.gg API.",
   "main": "main.js",
   "module": "main.js",

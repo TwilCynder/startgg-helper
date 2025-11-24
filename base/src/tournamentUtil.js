@@ -17,8 +17,9 @@ const placements = [
  */
 export function extractSlug(string){
     if (string.includes("start.gg/")){
-        return string.split("start.gg/")[1];
-    } 
+        string = string.split("start.gg/")[1];
+    };
+    string = string.split("/").slice(0, 4).join("/");
     return string;
 }
 
