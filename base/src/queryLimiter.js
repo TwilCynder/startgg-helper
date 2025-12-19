@@ -1,7 +1,10 @@
 //i am a god of JS
 
-//voir la diff avec la version de sgghelper ?
-
+/**
+ * Provides timing control for requests. If passed to a Query method, it will delay its execution to stay withing a defined limit.  
+ * 
+ * This is implemented like a semaphore automatically releasing tokens after a certain delay
+ */
 export class TimedQuerySemaphore {
     /**
      * @typedef {{client: any, schema: string, 
@@ -25,8 +28,8 @@ export class TimedQuerySemaphore {
 
     /**
      * 
-     * @param {number} size Semaphore counter initial value
-     * @param {number} delay 
+     * @param {number} size Semaphore counter initial value : how many requests we can send before having to wait
+     * @param {number} delay Delay before each taken token is released ;  how much time we wait before making new requests
      */
     constructor(size, delay){
         this.#counter = size;
@@ -67,7 +70,8 @@ export class TimedQuerySemaphore {
     }
 
     /**
-     * Executes the given query with the given GraphQL Client
+     * Executes the given query with the given GraphQL Client. 
+     * Note that this method probably shouldn't be called by anything else than Query.execute
      * @param {any} client 
      * @param {string} schema 
      * @param {{[varName: string]: value}} params 
@@ -97,6 +101,9 @@ export class TimedQuerySemaphore {
         }
     }
 
+    /**
+     * Stops the timing manager ; always call this at the end of your program, if you dont node will think there is still work to be done and won't exit
+     */
     stop(){
         for (let timer of this.#timers){
             clearTimeout(timer);
@@ -104,19 +111,22 @@ export class TimedQuerySemaphore {
     }
 }
 
+/**TimedQuerySemaphore that allows one request before waiting. You should use the DelayQueryLimiter instead.*/
 export class ClockQueryLimiter extends TimedQuerySemaphore {
-    /** @param {number} rpm */
+    /** @param {number} rpm Requests per minute*/
     constructor(rpm){
         super(1, 60000 / rpm);
     }
 }
 
+/** ClockQueryLimiter configured to stay within the start.gg API requests limit (60 per minute, so 1 second delay). You should use the StartGGDelayQueryLimiter instead*/
 export class StartGGClockQueryLimiter extends ClockQueryLimiter {
     constructor(){
         super(60);
     }
 }
 
+/**TimedQuerySemaphore that allows x requests before waiting, and waits for one minute. */
 export class DelayQueryLimiter extends TimedQuerySemaphore {
     /** @param {number} rpm */
     constructor(rpm){
@@ -124,6 +134,7 @@ export class DelayQueryLimiter extends TimedQuerySemaphore {
     }
 }
 
+/** ClockQueryLimiter configured to stay within the start.gg API requests limit (60 per minute)*/
 export class StartGGDelayQueryLimiter extends DelayQueryLimiter {
     constructor(){
         super(60)
