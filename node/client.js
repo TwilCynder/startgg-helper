@@ -3,7 +3,7 @@ import { GraphQLClient } from 'graphql-request';
 const publicEndpoint = 'https://api.start.gg/gql/alpha';
 const secretEndpoint = 'https://www.start.gg/api/-/gql';
 
-const headers = {
+const secretEndpointHeaders = {
     "client-version": "21",
     'Content-Type': 'application/json'
 }
@@ -17,6 +17,6 @@ export function createClient(token){
             Authorization: token.startsWith("Bearer ") ? token : ("Bearer " + token)
         }}) :
         new GraphQLClient(secretEndpoint, {
-        headers: headers
+        headers: secretEndpointHeaders
     });
 }
