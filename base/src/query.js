@@ -27,9 +27,11 @@ export class Query {
      * @param {{[varName: string]: value}} params 
      * @returns 
      */
-    #getLog(logName, params){
-        if (!this.log) return null;
-        let log = this.log[logName];
+    #getLog(logName, params, logsOverride = null){
+        let log;
+        if (logsOverride) log = logsOverride[logName];
+        if (this.log) log = this.log[logName] ?? log;
+
         if (log){
             if (typeof log == "string"){
                 return log;
@@ -38,6 +40,11 @@ export class Query {
             }
         }
         return null;
+    }
+
+    #getPaginatedLogOverride(params){
+        if (!this.paginatedLog) return null;
+        return this.paginatedLog(params);
     }
 
     /**
@@ -49,10 +56,10 @@ export class Query {
      * @param {boolean} silentErrors legacy parameter, does nothing
      * @param {number} maxTries Overrides this.#maxTries
      */
-    async #execute_(client, params, tries, limiter = null, silentErrors = false, maxTries = null){
+    async #execute_(client, params, tries, limiter = null, silentErrors = false, maxTries = null, logsOverride = null){
         maxTries = maxTries || this.#maxTries || 1
 
-        console.log((this.#getLog("query", params) || "Querying ...") + " Try " + (tries + 1));
+        console.log((this.#getLog("query", params, logsOverride) || "Querying ...") + " Try " + (tries + 1));
         try {
             let data = await ( limiter ? limiter.execute(client, this.#schema, params) : client.request(this.#schema, params));
             
@@ -63,8 +70,8 @@ export class Query {
                 console.error("Maximum number of tries reached. Throwing.", e);
                 throw e;
             }
-            console.error((this.#getLog("error", params) || "Request failed.") + ` Retrying (try ${tries + 1}). Error : `, e);
-            return this.#execute_(client, params, tries + 1, limiter, silentErrors, maxTries);
+            console.error((this.#getLog("error", params, logsOverride) || "Request failed.") + ` Retrying (try ${tries + 1}). Error : `, e);
+            return this.#execute_(client, params, tries + 1, limiter, silentErrors, maxTries, logsOverride);
         }
     }
 
@@ -76,8 +83,8 @@ export class Query {
      * @param {number} maxTries Overrides the default maximum tries count for this query.
      * @returns 
      */
-    async execute(client, params, limiter = null, silentErrors = false, maxTries = null){
-        return await this.#execute_(client, params, 0, limiter, silentErrors, maxTries);
+    async execute(client, params, limiter = null, silentErrors = false, maxTries = null, logsOverride = null){
+        return await this.#execute_(client, params, 0, limiter, silentErrors, maxTries, logsOverride);
     }
 
     static IWQModes = {
@@ -121,14 +128,16 @@ export class Query {
         params[pageParamName] = currentPage;
         params[perPageParamName] = perPage;
 
+        const logsOverride = this.#getPaginatedLogOverride(params);
+
         let data;
         while (true){
             if (result.length >= maxElements) break;
 
             console.log("Querying page", params[pageParamName], `(${result.length} elements loaded)`);
-            data = await this.execute(client, params, limiter, silentErrors, maxTries);
+            data = await this.execute(client, params, limiter, silentErrors, maxTries, logsOverride);
 
-            if (!data) throw (this.#getLog("error", params) ?? "Request failed.") + "(in paginated execution, at page " + params[pageParamName] + ")";
+            if (!data) throw (this.#getLog("error", params, logsOverride) ?? "Request failed.") + "(in paginated execution, at page " + params[pageParamName] + ")";
 
             let connection = deep_get(data, connectionPathInQuery);
 

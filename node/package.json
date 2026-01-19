@@ -1,6 +1,6 @@
 {
   "name": "startgg-helper-node",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "A set of functions and classes useful to communicate with the start.gg API.",
   "main": "main.js",
   "module": "main.js",
@@ -37,7 +37,7 @@
   "homepage": "https://gitlab.com/TwilCynder/startgg-helper#readme",
   "dependencies": {
     "graphql-request": "^7.1.2",
-    "startgg-helper": "^2.3.1"
+    "startgg-helper": "^2.3.2"
   },
   "type": "module",
   "devDependencies": {
