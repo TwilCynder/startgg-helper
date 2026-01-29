@@ -5,6 +5,17 @@ function isConnection(val){
     return val instanceof Object && val.nodes instanceof Array
 }
 
+export class PageResult {
+    /**
+     * @param {any} result 
+     * @param {boolean} stop 
+     */
+    constructor(result, stop){
+        this.result = result;
+        this.stop = stop;
+    }
+}
+
 /**
  * A GraphQL Document/Schema. Allows easily batch-requesting with the same schema but different parameters. 
  */
@@ -94,6 +105,8 @@ export class Query {
         OUT: 3
     }
 
+    /** @typedef {(localResult: T[], currentResult: T[], pageIndex: number) => (T[]|PageResult|boolean)?} PageCallback*/
+
     /**
      * Queries a whole paginated collection (of a *Connection type). See the start.gg API doc or this package's documentation for more info about pagniated collections. This is done through executing the query repeatedly while increasing the page index each time. 
      * The target collection must be pointed to by the "path" argument, and will be agregated in a single array. The schema must have a variable (whose name can be specified in parameters) that is used as the page index of the paginated field.
@@ -103,7 +116,7 @@ export class Query {
      * @param {{[varName: string]: value}} params GraphQL variables ; does not include the page index variable. 
      * @param {string} connectionPathInQuery JSON path to the paginated collection that must be aggregated in the query (JSON path : property names separated by dots, see deep_get())
      * @param {TimedQuerySemaphore} limiter A request limiter object; see TimedQuerySemaphore
-     * @param {{pageParamName?: string, perPageParamName?: string, perPage?: number, delay?: number, maxElements?: number, includeWholeQuery?: number, callback: (localResult: T[]) => T[]?}} config 
+     * @param {{pageParamName?: string, perPageParamName?: string, perPage?: number, delay?: number, maxElements?: number, includeWholeQuery?: number, callback: PageCallback?}} config 
      * @param  config.pageParamName name of the variable representing the page index. This variable must exist in your query, and be used as an argument in a paginated collection field
      * @param  config.delay number of miliseconds to wait for between each query. No delay if absent.
      * @param  config.maxElements if present, queries will stop once this many elements have been fetched
@@ -150,29 +163,58 @@ export class Query {
 
             let localResult = connection.nodes;
 
-            if (connection.pageInfo && connection.pageInfo.totalPages){
+            if (connection.pageInfo && connection.pageInfo.totalPages){ //if the query contains pageInfo we use that to determine if we're at the last page
                 let totalPages = connection.pageInfo.totalPages;
-                if (!totalPages || currentPage >= totalPages) {
+                if (currentPage >= totalPages) {
                     if (config.callback){
-                        let cbRes = config.callback(localResult, currentPage);
-                        if (!cbRes) break;
-                        localResult = cbRes;
+                        let cbRes = config.callback(localResult, currentResult, pageIndex)
+
+                        if (cbRes instanceof PageResult){
+                            if (cbRes.result){ //If the user gives us a result we take it ofc
+                                result = cbRes.result;
+                            } else {
+                                result = result.concat(localResult);
+                            }
+                        } else if (cbRes && cbRes !== true) { //cbres isn't one that means something loop-control-related (it's over anyways so we don't care!)
+                            result = result.concat(cbRes);
+                        }
+                    } else {
+                        result = result.concat(localResult);
                     }
-                    result = result.concat(localResult);
                     break;
                 }
-            } else {
+            } else { //if not, we only know when we get an empty page
                 if (localResult.length < 1) break;
             }
 
             if (config.callback){
                 let cbRes = config.callback(localResult, currentPage);
-                if (!cbRes) break;
-                localResult = cbRes;
+
+                if (cbRes instanceof PageResult){
+                    if (cbRes.result){ //If the user gives us a result we take it ofc
+                        result = cbRes.result;
+                    } else {
+                        result = result.concat(localResult);
+                    }
+                    if (cbRes.stop){
+                        break;
+                    }
+                    currentPage++;
+                } else if (!cbRes) { //"normal case" : basic callback that doesn't touch the flow of the pexecution, we concat and increment normally
+                    result = result.concat(localResult)
+                    currentPage++;
+                } else if (cbRes === true){ //callback is asking us to stop by returning true
+                    break;
+                } else { //callback returns a non-boolean value : it's the local result (and we increment normally)
+                    result = result.concat(cbRes);
+                    currentPage++;
+                }
+
+            } else {
+                result = result.concat(localResult);
+                currentPage++;
             }
 
-            result = result.concat(localResult);
-            currentPage++;
             params[pageParamName] = currentPage;
 
             if (delay)

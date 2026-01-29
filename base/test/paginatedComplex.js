@@ -1,4 +1,4 @@
-import { Query } from "../src/query.js";
+import { PageResult, Query } from "../src/query.js";
 import { schema } from "./paginatedCommon.js";
 
 let query = new Query(schema, 3);
@@ -16,7 +16,9 @@ export async function testPaginatedComplex(client){
         perPage: 10,
         includeWholeQuery: Query.IWQModes.INLINE,
         maxElements: 100, 
-        callback: (localresult, i) => {console.log(localresult, i); return localresult}
+        callback: (localresult, currentResult, i) => {
+            console.log(localresult, i);
+        }
     });
     return result;
 }
