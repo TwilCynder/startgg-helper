@@ -87,7 +87,7 @@ export class Query {
     }
 
     /**
-     * @param {GraphQLClient} client A client object ; not provided by this package, either use startgg-helper-node (or-browser) or refer to README.md
+     * @param {GraphQLClient} client A client object ; not provided by this package, either use startgg-helper-node (or -browser) or refer to README.md
      * @param {{[varName: string]: value}} params GraphQL variables
      * @param {TimedQuerySemaphore} limiter A request limiter object; see TimedQuerySemaphore
      * @param {boolean} silentErrors No effect, exists only for legacy purposes
@@ -116,7 +116,7 @@ export class Query {
      * @param {{[varName: string]: value}} params GraphQL variables ; does not include the page index variable. 
      * @param {string} connectionPathInQuery JSON path to the paginated collection that must be aggregated in the query (JSON path : property names separated by dots, see deep_get())
      * @param {TimedQuerySemaphore} limiter A request limiter object; see TimedQuerySemaphore
-     * @param {{pageParamName?: string, perPageParamName?: string, perPage?: number, delay?: number, maxElements?: number, includeWholeQuery?: number, callback: PageCallback?}} config 
+     * @param {{pageParamName?: string, perPageParamName?: string, perPage?: number, startingPage: number, initialData: any, delay?: number, maxElements?: number, includeWholeQuery?: number, callback: PageCallback?}} config 
      * @param  config.pageParamName name of the variable representing the page index. This variable must exist in your query, and be used as an argument in a paginated collection field
      * @param  config.delay number of miliseconds to wait for between each query. No delay if absent.
      * @param  config.maxElements if present, queries will stop once this many elements have been fetched
@@ -127,15 +127,14 @@ export class Query {
      * @returns See config.includeWholeQuery
      */
     async executePaginated(client, params, connectionPathInQuery, limiter = null, config = {}, silentErrors = false, maxTries = null){
-        let result = [];
-        //delay = null, perPage = undefined, pageParamName = "page", perPageParamName = "perPage", silentErrors = false, maxTries = null
+        let result = config.initialData ?? [];
         const pageParamName = config.pageParamName ?? "page";
         const perPageParamName = config.perPageParamName ?? "perPage";
         const perPage = config.perPage ?? params[perPageParamName];
         const delay = config.delay;
         const maxElements = config.maxElements ?? undefined; //eliminating null
 
-        let currentPage = 1;
+        let currentPage = config.startingPage > 0 ? config.startingPage : 1;
 
         params = Object.assign({}, params);
         params[pageParamName] = currentPage;
@@ -167,7 +166,7 @@ export class Query {
                 let totalPages = connection.pageInfo.totalPages;
                 if (currentPage >= totalPages) {
                     if (config.callback){
-                        let cbRes = config.callback(localResult, currentResult, pageIndex)
+                        let cbRes = config.callback(localResult, result, currentPage)
 
                         if (cbRes instanceof PageResult){
                             if (cbRes.result){ //If the user gives us a result we take it ofc
@@ -188,7 +187,7 @@ export class Query {
             }
 
             if (config.callback){
-                let cbRes = config.callback(localResult, currentPage);
+                let cbRes = config.callback(localResult, result, currentPage);
 
                 if (cbRes instanceof PageResult){
                     if (cbRes.result){ //If the user gives us a result we take it ofc
@@ -199,21 +198,19 @@ export class Query {
                     if (cbRes.stop){
                         break;
                     }
-                    currentPage++;
                 } else if (!cbRes) { //"normal case" : basic callback that doesn't touch the flow of the pexecution, we concat and increment normally
                     result = result.concat(localResult)
-                    currentPage++;
                 } else if (cbRes === true){ //callback is asking us to stop by returning true
                     break;
                 } else { //callback returns a non-boolean value : it's the local result (and we increment normally)
                     result = result.concat(cbRes);
-                    currentPage++;
                 }
 
             } else {
                 result = result.concat(localResult);
-                currentPage++;
             }
+
+            currentPage++;
 
             params[pageParamName] = currentPage;
 
