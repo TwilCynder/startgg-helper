@@ -124,3 +124,13 @@ export function isNumber(n){
 export function toUNIXTimestamp(d){
     return isNaN(d) ? new Date(d).getTime() / 1000 : d;
 }
+
+/**
+ * Creates a Map from an array of objects, using one of the object's properties as their key
+ * @template {Object} T
+ * @param {T[]} array Array of objects
+ * @param {string} property Name of the object's property that will be used as their key in the map
+ */
+export function arrayToMap(array, property){
+    return new Map(array.map(obj => [obj[property], obj]))
+}
