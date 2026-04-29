@@ -18,6 +18,7 @@ class TimedClient {
     }
 
     async request(schema, variables){
-
+        await this.#limiter.lock();
+        return await this.#client.request(schema, variables);
     }
 }

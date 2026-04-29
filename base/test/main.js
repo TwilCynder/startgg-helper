@@ -1,3 +1,5 @@
+#! node
+
 import { deep_get } from "../src/jsUtil.js";
 import { makeClient } from "./common.js";
 import { testLong } from "./long.js";
@@ -6,13 +8,15 @@ import { testPaginatedComplex } from "./paginatedComplex.js";
 import { testShort } from "./short.js";
 import { ArgumentsManager } from "@twilcynder/arguments-parser"
 import { testUpsets } from "./upsets.js";
+import { testTS } from "./utils/semaphore.js";
 
-let {short, long, paginated, paginatedComplex, upsets} = new ArgumentsManager()
+let {short, long, paginated, paginatedComplex, upsets, semaphore} = new ArgumentsManager()
     .addSwitch(["-s", "--short"], {})
     .addSwitch(["-l", "--long"], {})
     .addSwitch(["-p", "--paginated"], {})
     .addSwitch(["-P", "--paginatedComplex"], {})
     .addSwitch(["-u", "--upsets"], {})
+    .addSwitch(["-S", "--semaphore"], {})
     .enableHelpParameter()
     .parseProcessArguments()
 
@@ -45,4 +49,8 @@ if (upsets){
     for (let upset of res){
         console.log(upset);
     }
+}
+
+if (semaphore){
+    await testTS();
 }
