@@ -61,3 +61,16 @@ export function getDoubleEliminationUpsetFactorFromSet(set){
     return (score1 > score2) ? [getDoubleEliminationUpsetFactorFromSeeds(seed1, seed2), 0] : [getDoubleEliminationUpsetFactorFromSeeds(seed2, seed1), 1];
 }
 
+/**
+ * @param {number} placement 
+ */
+export function getPlacementSuffix(placement){
+    placement = placement % 100;
+    if (placement >= 11 && placement <= 13) return "th";
+    placement = placement % 10;
+    console.log(placement)
+    if (placement == 1) return "st";
+    if (placement == 2) return "nd";
+    if (placement == 3) return "rd";
+    return "th";
+}

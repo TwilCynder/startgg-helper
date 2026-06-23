@@ -3,6 +3,7 @@ import { testLong } from "./long.js";
 import { testPaginated } from "./paginated.js";
 import { testPaginatedComplex } from "./paginatedComplex.js";
 import { testShort } from "./short";
+import { testPlacementSuffix } from "./tournamentUtil.js";
 import { testUpsets } from "./upsets.js";
 
 test("Single query (event results)", async () => {
@@ -40,3 +41,8 @@ test("Calculate upset factor on 8 sets across 2 events", async () => {
     expect(res).toBeTruthy();
     expect(res).toStrictEqual(upsets);
 }, 60000)
+
+test("Placement suffixes", () => {
+    let [res, expected] = testPlacementSuffix();
+    expect(res).toStrictEqual(expected);
+})
