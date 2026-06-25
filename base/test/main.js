@@ -6,13 +6,16 @@ import { testPaginatedComplex } from "./paginatedComplex.js";
 import { testShort } from "./short.js";
 import { ArgumentsManager } from "@twilcynder/arguments-parser"
 import { testUpsets } from "./upsets.js";
+import { testPlacementSuffix } from "./tournamentUtil.js";
 
-let {short, long, paginated, paginatedComplex, upsets} = new ArgumentsManager()
+let {short, long, paginated, paginated_complex, upsets, placement_suffix} = new ArgumentsManager()
+    .setParameters({guessLowDashes: true})
     .addSwitch(["-s", "--short"], {})
     .addSwitch(["-l", "--long"], {})
     .addSwitch(["-p", "--paginated"], {})
-    .addSwitch(["-P", "--paginatedComplex"], {})
+    .addSwitch(["-P", "--paginated-complex"], {})
     .addSwitch(["-u", "--upsets"], {})
+    .addSwitch(["-S", "--placement-suffix"], {})
     .enableHelpParameter()
     .parseProcessArguments()
 
@@ -33,7 +36,7 @@ if (paginated){
     console.log(await testPaginated(client)); 
 }
 
-if (paginatedComplex){
+if (paginated_complex){
     console.log("Testing : paginated query");
     let res = await testPaginatedComplex(client);
     console.log(res, deep_get(res, "event.sets.nodes")); 
@@ -41,8 +44,14 @@ if (paginatedComplex){
 
 if (upsets){
     console.log("Testing : upsets calculation");
-    let res = await testUpsets(client);
-    for (let upset of res){
-        console.log(upset);
-    }
+    let [res, expected] = await testUpsets(client);
+    console.log(res);
+    console.log(expected);
+}
+
+if (placement_suffix){
+    console.log("Testing : placement suffixes");
+    let [res, expected] = testPlacementSuffix();
+    console.log(res.join("\t"));
+    console.log(expected.join("\t"));
 }

@@ -44,7 +44,8 @@ export function getUpsetFactor(seed1, seed2){
 }
 
 export function getDoubleEliminationUpsetFactorFromSeeds(winnerSeed, loserSeed){
-    return getUpsetFactor(winnerSeed, loserSeed)
+    let UF = getUpsetFactor(winnerSeed, loserSeed);
+    return UF > 0 ? UF : 0;
 }
 
 export function getDoubleEliminationUpsetFactorFromSet(set){
@@ -58,7 +59,7 @@ export function getDoubleEliminationUpsetFactorFromSet(set){
     //console.log(set.slots[0].entrant.name, set.slots[1].entrant.name);
     //console.log(score1, score2, seed1, seed2);
 
-    return (score1 > score2) ? [getDoubleEliminationUpsetFactorFromSeeds(seed1, seed2), 0] : [getDoubleEliminationUpsetFactorFromSeeds(seed2, seed1), 1];
+    return (score1 > score2) ? [getDoubleEliminationUpsetFactorFromSeeds(seed2, seed1), 0] : [getDoubleEliminationUpsetFactorFromSeeds(seed1, seed2), 1];
 }
 
 /**
@@ -68,7 +69,6 @@ export function getPlacementSuffix(placement){
     placement = placement % 100;
     if (placement >= 11 && placement <= 13) return "th";
     placement = placement % 10;
-    console.log(placement)
     if (placement == 1) return "st";
     if (placement == 2) return "nd";
     if (placement == 3) return "rd";

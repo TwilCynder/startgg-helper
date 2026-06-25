@@ -40,13 +40,28 @@ const schema = `
 `
 
 let query = new Query(schema, 3);
+query.log = {
+    query: params => `Fetching sets from event ${params.slug} (page ${params.page})`,
+    error: params => `Request failed for event ${params.slug} (page ${params.page})`
+}
+
+let expected = [
+    [1,1],
+    [1,0],
+    [1,1],
+    [1,0],
+    [0,1],
+    [0,0],
+    [0,1],
+    [0,0],
+]
+
 export async function testUpsets(client){
    let limiter = new StartGGDelayQueryLimiter();
 
     try {
-
         let promises = [];
-        for (let i = 1; i < 3; i++){
+        for (let i = 0; i < 3; i++){
             for (let j = 0; j < 2; j++){
                 promises.push(query.execute(client, {
                     slug: `tournament/stock-o-clock-${i}/event/1v1-ultimate`,
@@ -66,7 +81,7 @@ export async function testUpsets(client){
             }
         }
 
-        return upsets;
+        return [expected, upsets];
     } catch (err){
         console.error(err);
         return null;
