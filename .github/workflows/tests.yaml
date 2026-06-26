@@ -9,8 +9,10 @@ jobs:
             -   name: Install Node
                 uses: actions/setup-node@v4
             -   name:
+                shell: bash
                 run: |
                     cd base
                     npm install
                     chmod a+x test/jest.sh
-                    npm test
+                    npm config set script-shell bash
+                    npm test -- -s

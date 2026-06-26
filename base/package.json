@@ -17,7 +17,7 @@
     "/src"
   ],
   "scripts": {
-    "test": "bash -c 'test/jest.sh $@' $0"
+    "test": "bash ./test/jest.sh"
   },
   "repository": {
     "type": "git",

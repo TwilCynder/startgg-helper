@@ -1,4 +1,4 @@
-#! bash
+#!/usr/bin/env bash
 
 NODE_ARGS="--experimental-vm-modules --no-warnings"
 JEST=node_modules/jest/bin/jest.js
