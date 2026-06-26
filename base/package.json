@@ -17,7 +17,8 @@
     "/src"
   ],
   "scripts": {
-    "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --silent"
+    "test": "bash -c \"test/jest.sh \\$@\" $0",
+    "t": "bash -c \"echo \\$@\" $0"
   },
   "repository": {
     "type": "git",
