@@ -12,4 +12,5 @@ jobs:
                 run: |
                     cd base
                     npm install
+                    chmod a+x test/jest.sh
                     npm test
