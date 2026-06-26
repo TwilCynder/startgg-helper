@@ -9,7 +9,7 @@ function processObjectPath(path){
         }
     }
     return path;
-}//jsutil
+}
 
 /**
  * Traverses nested object following a path and returns what's at the end, without throwing an error if an intermediary object-property is not found.  
@@ -24,13 +24,14 @@ function processObjectPath(path){
  * deep_get(obj, "a.d.c", 15);//returns 15, default value
  * ```
  * 
- * This function supports numbers as property names, which **works with arrays**.
+ * This function supports numbers as property names, which **works with arrays**. Standard array access syntax (`[]`) **is not supported**
  * ```js
  * const obj = {a: [{}, {}, {b: 12}]};
  * 
  * obj.a[2].b; value: 12
  * obj.a.2.b; Syntax ERROR
  * deep_get(obj, "a.2.b"); //returns 12
+ * deep_ger(obj, "a[2].b"); //ERROR
  * ```
  * 
  * @param {Object | Array} obj Object or array
