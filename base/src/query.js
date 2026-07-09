@@ -68,7 +68,7 @@ export class Query {
      * @param {number} maxTries Overrides this.#maxTries
      */
     async #execute_(client, params, tries, limiter = null, silentErrors = false, maxTries = null, logsOverride = null){
-        maxTries = maxTries || this.#maxTries || 1
+        maxTries = maxTries || this.#maxTries || 0
 
         console.log((this.#getLog("query", params, logsOverride) || "Querying ...") + " Try " + (tries + 1));
         try {
