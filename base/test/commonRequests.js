@@ -1,4 +1,4 @@
-export const schema = `
+export const paginatedSchema = `
     query Sets($slug: String, $page: Int, $perPage: Int) {
         event(slug: $slug){
             slug
@@ -16,4 +16,28 @@ export const schema = `
             }
         }
     }
+`
+
+export const basicSchema = `
+query EventStandingsQuery($slug: String!) {
+  event(slug: $slug) {
+    id
+    entrants (query: {perPage: 500}){
+      nodes {
+        id
+        name
+        participants {
+          player {
+            id
+            gamerTag
+          }
+          user {
+            id
+            slug
+          }
+        }
+      }
+    }
+  }
+}
 `

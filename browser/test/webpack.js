@@ -1,7 +1,7 @@
 #! node
 
 import webpack from "webpack"
-import {dirname, resolve} from "path"
+import {resolve} from "path"
 
 let compiler = webpack({
     entry: new URL("../main.js", import.meta.url).toString() ,

@@ -18,7 +18,7 @@
     "jsUtil.js"
   ],
   "scripts": {
-    "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --silent"
+    "test": "bash ../_testCommon/jest.sh"
   },
   "repository": {
     "type": "git",

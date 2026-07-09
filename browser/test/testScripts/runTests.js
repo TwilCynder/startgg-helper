@@ -1,8 +1,5 @@
 import { deep_get, StartGGDelayQueryLimiter } from "../dist/bundle.js";
-import { testUpsets, validateUpsets } from "./upsets.js"
 import { testLong } from "./long.js";
-import { testPaginated } from "./paginated.js";
-import { testPaginatedComplex } from "./paginatedComplex.js";
 import { testShort } from "./short.js";
 
 function logFailure(name, error){
@@ -57,9 +54,6 @@ export async function runTests(client){
     let limiter = new StartGGDelayQueryLimiter();
     await runTest("Single query (event results)", async () => testShort(client, limiter), truthyValidator());
     await runTest("100ish queries", async () => testLong(client, limiter), truthyValidator());
-    await runTest("Paginated query (sets)", async () => testPaginated(client, limiter), truthyValidator())
-    await runTest("Paginated query (sets) with advanced options", async () => testPaginatedComplex(client, limiter), equalValidator(100, "event.sets.nodes.length"));
-    await runTest("Calculate upset factor on 8 sets across 2 events", async () => testUpsets(client, limiter), validateUpsets);
 
     console.log("Final results :", results);
 }

@@ -7,13 +7,15 @@ import { testShort } from "./short.js";
 import { ArgumentsManager } from "@twilcynder/arguments-parser"
 import { testUpsets } from "./upsets.js";
 import { testPlacementSuffix } from "./tournamentUtil.js";
+import { testBadRequest } from "./startggError.js";
 
-let {short, long, paginated, paginated_complex, upsets, placement_suffix} = new ArgumentsManager()
+let {short, long, paginated, paginated_complex, upsets, placement_suffix, error} = new ArgumentsManager()
     .setParameters({guessLowDashes: true})
     .addSwitch(["-s", "--short"], {})
     .addSwitch(["-l", "--long"], {})
     .addSwitch(["-p", "--paginated"], {})
     .addSwitch(["-P", "--paginated-complex"], {})
+    .addSwitch(["-e", "--error"], {})
     .addSwitch(["-u", "--upsets"], {})
     .addSwitch(["-S", "--placement-suffix"], {})
     .enableHelpParameter()
@@ -54,4 +56,10 @@ if (placement_suffix){
     let [res, expected] = testPlacementSuffix();
     console.log(res.join("\t"));
     console.log(expected.join("\t"));
+}
+
+if (error){
+    console.log("Testing : API error translation");
+    let error = await testBadRequest(client);
+    console.log(error);
 }

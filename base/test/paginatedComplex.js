@@ -1,7 +1,7 @@
-import { PageResult, Query } from "../src/query.js";
-import { schema } from "./paginatedCommon.js";
+import { Query } from "../src/query.js";
+import { paginatedSchema } from "./commonRequests.js";
 
-let query = new Query(schema, 3);
+let query = new Query(paginatedSchema, 3);
 
 query.paginatedLog = (params) => {
     const tournamentSlug = params.slug.split("/")[1];
@@ -18,7 +18,7 @@ export async function testPaginatedComplex(client){
         initialData: [{fakeSetForTesting: true}],
         includeWholeQuery: Query.IWQModes.INLINE,
         maxElements: 100, 
-        callback: (localresult, currentResult, i) => {
+        callback: (localresult, _currentResult, i) => {
             console.log("Page", i, ":", localresult);
         }
     });

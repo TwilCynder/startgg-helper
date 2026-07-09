@@ -1,8 +1,8 @@
 import { Query } from "../src/query.js";
 
-import { schema } from "./paginatedCommon.js";
+import { paginatedSchema } from "./commonRequests.js";
 
-let query = new Query(schema, 3);
+let query = new Query(paginatedSchema, 3);
 query.log = {
     query: (params) => "Fetching sets for event " + params.slug + ", page " + params.page
 }

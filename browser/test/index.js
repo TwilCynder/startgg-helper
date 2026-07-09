@@ -16,7 +16,7 @@ try {
 console.log("Token :", token)
 
 if (token){
-    let client = new RateLimitingSGGHelperClient(token);
+    let client = new RateLimitingSGGHelperClient("Bearer " + token);
 
     try {
         await runTests(client);
