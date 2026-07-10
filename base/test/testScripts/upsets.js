@@ -1,6 +1,6 @@
-import { Query } from "../src/query.js";
-import { StartGGDelayQueryLimiter } from "../src/queryLimiter.js";
-import { getDoubleEliminationUpsetFactorFromSet } from "../src/tournamentUtil.js";
+import { Query } from "../../src/query.js";
+import { StartGGDelayQueryLimiter } from "../../src/queryLimiter.js";
+import { getDoubleEliminationUpsetFactorFromSet } from "../../src/tournamentUtil.js";
 
 const schema = `
     query Sets($slug: String, $page: Int, $perPage: Int) {

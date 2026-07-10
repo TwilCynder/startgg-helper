@@ -1,4 +1,4 @@
-import { getPlacementSuffix } from "../src/tournamentUtil.js";
+import { getPlacementSuffix } from "../../src/tournamentUtil.js";
 
 export function testPlacementSuffix(){
     return [

@@ -1,13 +1,13 @@
 import { deep_get } from "../src/jsUtil.js";
-import { makeClient } from "./common.js";
-import { testLong } from "./long.js";
-import { testPaginated } from "./paginated.js";
-import { testPaginatedComplex } from "./paginatedComplex.js";
-import { testShort } from "./short.js";
+import { createClientAuto } from "./client.js";
+import { testLong } from "./testScripts/long.js";
+import { testPaginated } from "./testScripts/paginated.js";
+import { testPaginatedComplex } from "./testScripts/paginatedComplex.js";
+import { testShort } from "./testScripts/short.js";
 import { ArgumentsManager } from "@twilcynder/arguments-parser"
-import { testUpsets } from "./upsets.js";
-import { testPlacementSuffix } from "./tournamentUtil.js";
-import { testBadRequest } from "./startggError.js";
+import { testUpsets } from "./testScripts/upsets.js";
+import { testPlacementSuffix } from "./testScripts/tournamentUtil.js";
+import { testBadRequest } from "./testScripts/startggError.js";
 
 let {short, long, paginated, paginated_complex, upsets, placement_suffix, error} = new ArgumentsManager()
     .setParameters({guessLowDashes: true})
@@ -21,7 +21,8 @@ let {short, long, paginated, paginated_complex, upsets, placement_suffix, error}
     .enableHelpParameter()
     .parseProcessArguments()
 
-let client = makeClient();
+let client = await createClientAuto();
+console.log(client);
 
 if (short){
     console.log("Testing : single query");

@@ -1,4 +1,4 @@
-import { Query } from "../src/query.js";
+import { Query } from "../../src/query.js";
 
 import { paginatedSchema } from "./commonRequests.js";
 

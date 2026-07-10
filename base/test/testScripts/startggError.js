@@ -1,4 +1,4 @@
-import { Query } from "../src/query.js";
+import { Query } from "../../src/query.js";
 import { basicSchema } from "./commonRequests.js";
 
 let query = new Query(basicSchema, 0);
