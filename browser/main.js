@@ -1,4 +1,5 @@
 import { Query } from "startgg-helper";
+import { GraphQLError } from "./error";
 export * from "startgg-helper"
 
 export async function loadQuery(url, maxTries = null){
@@ -8,36 +9,6 @@ export async function loadQuery(url, maxTries = null){
         return new Query(schema, maxTries);
     } catch (err){
         throw new Error("Failed to load query from GraphQL file. Reason : " + err);
-    }
-}
-
-class GraphQLError extends Error {
-    /**
-     * 
-     * @param {Response} response 
-     * @param {{schema: {}, variables: {}}} request 
-     */
-    constructor(response, request, resBody){
-        let message = "";
-        if (resBody.message){
-            message = resBody.message + ` (error id ${resBody.errorId})\n`;
-        } else if (resBody.errors){
-            message = "Errors : \n";
-            for (let error of resBody.errors){
-                message += "- " + error.message + ` (error id ${error.errorId})\n`;
-            }
-            message += '\n';
-        }
-        super(
-            "Received code " + response.status + " \n " + 
-            message + 
-            "Original request : " + JSON.stringify(request)
-        )
-
-        //super("Received code " + response.status + " ; " + JSON.stringify(request));
-        this.name = "GraphQLError"
-        this.response = response;
-        this.resBody = resBody;
     }
 }
 
@@ -53,6 +24,11 @@ export class SGGHelperClient {
     }
 
     async request(schema, variables){
+        const reqBody = {
+            'query': schema,
+            'variables': variables
+        };
+
         const response = await fetch('https://api.start.gg/gql/alpha', {
             method: 'POST',
             headers: {
@@ -60,17 +36,15 @@ export class SGGHelperClient {
                 'accept': 'application/json',
                 'Authorization': this.#token
             },
-            body: JSON.stringify({
-                'query': schema,
-                'variables': variables
-            }),
+            body: JSON.stringify(reqBody),
         });
+
         const json = await response.json();
         if (!json){
             throw "Empty response"
         }
         if (!json.data){
-            throw new GraphQLError(response, {schema, variables}, json);
+            throw new GraphQLError(json, reqBody);
         }
     
         return json.data;
