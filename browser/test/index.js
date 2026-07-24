@@ -1,5 +1,5 @@
 import {RateLimitingSGGHelperClient, StartGGDelayQueryLimiter} from "./dist/bundle.js"
-import { runAll } from "./src/runTests.js";
+import { runAll, runSingleTest } from "./src/runTests.js";
 
 let token;
 try {
@@ -19,7 +19,14 @@ if (token){
     let limiter = new StartGGDelayQueryLimiter();
 
     try {
-        await runAll(client, limiter);
+        const searchParams = new URLSearchParams(window.location.search)
+        let testName = searchParams.get("test");
+        
+        await testName ?
+            runSingleTest(testName, client, limiter) :
+            runAll(testName, limiter);
+
+        // await runAll(client, limiter);
     } catch (err){
         console.error(err); 
     }
