@@ -1,5 +1,5 @@
-import { Query } from "../dist/bundle.js";
-import { processData } from "./testUtil.js";
+import { Query } from "../../dist/bundle.js";
+import { processData, truthyValidator } from "../testUtil.js";
 
 const schema = `
 query EventStandingsQuery($slug: String!) {
@@ -26,7 +26,13 @@ query EventStandingsQuery($slug: String!) {
 `
 
 let query = new Query(schema, 3);
-export async function testShort(client, limiter){
+async function runTest(client, limiter){
   let result = await query.execute(client, {slug: "tournament/tls-mad-ness-25/event/1v1-ultimate"}, limiter);
   return processData(result, "event");
+}
+
+export default {
+  runTest,
+  validate: truthyValidator(),
+  name: "Single query (event results)"
 }

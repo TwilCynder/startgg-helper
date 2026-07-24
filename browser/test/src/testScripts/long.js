@@ -1,5 +1,6 @@
-import { Query } from "../dist/bundle.js";
-import { StartGGDelayQueryLimiter } from "../dist/bundle.js";
+import { Query } from "../../dist/bundle.js";
+import { StartGGDelayQueryLimiter } from "../../dist/bundle.js";
+import { truthyValidator } from "../testUtil.js";
 
 const schema = `
     query Sets($slug: String, $page: Int, $perPage: Int) {
@@ -14,7 +15,7 @@ const schema = `
 `
 
 let query = new Query(schema, 3);
-export async function testLong(client, limiter){
+async function runTest(client, limiter){
     try {
         limiter = limiter || new StartGGDelayQueryLimiter();
 
@@ -36,4 +37,10 @@ export async function testLong(client, limiter){
         return null;
     }
 
+}
+
+export default {
+    runTest,
+    validate: truthyValidator(),
+    name: "100ish queries"
 }

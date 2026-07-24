@@ -1,6 +1,5 @@
-import {Query, RateLimitingSGGHelperClient} from "./dist/bundle.js"
-import { runTests } from "./testScripts/runTests.js";
-
+import {RateLimitingSGGHelperClient, StartGGDelayQueryLimiter} from "./dist/bundle.js"
+import { runAll } from "./src/runTests.js";
 
 let token;
 try {
@@ -17,12 +16,12 @@ console.log("Token :", token)
 
 if (token){
     let client = new RateLimitingSGGHelperClient("Bearer " + token);
+    let limiter = new StartGGDelayQueryLimiter();
 
     try {
-        await runTests(client);
+        await runAll(client, limiter);
     } catch (err){
-        console.error("ERROR")
-        console.error(err);
+        console.error(err); 
     }
 
 }
