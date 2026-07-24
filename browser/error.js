@@ -21,13 +21,11 @@ export class GraphQLError extends Error {
             if (resBody.errors.length == 1){
                 message = messageFromResBody(resBody.errors[0]);
             } else {
-                for (let error of resBody.errors){
-                    message += "- " + error.message + ` (error id ${error.errorId})\n`;
-                }
+                message = resBody.errors.map(error => messageFromResBody(error)).join("; ")
             }
         }
         super(
-            "Received code " + response.status + " \n " + message 
+            "Received code " + response.status + " : " + message 
         )
 
         //super("Received code " + response.status + " ; " + JSON.stringify(request));
