@@ -9,10 +9,11 @@ function messageFromResBody(body){
 export class GraphQLError extends Error {
     /**
      * @param {Response} response 
+     * @param {{}} resBody
      * @param {{schema: {}, variables: {}}} request 
      */
-    constructor(response, request){
-        const resBody = response.body ?? {};
+    constructor(response, resBody, request){
+        console.log("Response", response, resBody);
         let message = "";
 
         if (resBody.message){

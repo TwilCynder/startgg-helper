@@ -2,6 +2,8 @@
  * @typedef {typeof import("./testScripts/short.js").default} Test
  */
 
+import { loadAll, loadScript } from "./loadScripts.js";
+
 function log(id, result, color){
     let line = document.querySelector("#"+id);
 
@@ -11,7 +13,7 @@ function log(id, result, color){
 
 function logFailure(id, test, error){
     console.error("Test", test.name, "failed :", error);
-    log(id, "Failure :" + err, "red");
+    log(id, "Failure : " + error.message, "red");
 }
 
 function logSuccess(id, test){
@@ -29,24 +31,11 @@ function testLogDiv(test, id){
 }
 
 /**
- * @param {string} name 
- * @returns {Promise<Test>}
- */
-function loadScript(name){
-    const filename = "./testScripts/" + name + ".js";
-    return import(filename).then(module => module.default);
-}
-
-async function loadAll(){
-    const list = await fetch(import.meta.resolve("./list.json")).then(buf => buf.json());
-    return Promise.all(list.map(async name => [name, await loadScript(name)]));
-}
-
-/**
  * 
  * @param {Test} test 
  */
 async function runTest(test, id, client, limiter){
+    console.log("Running test", test.name)
     let res;
     try {
         let val = await test.runTest(client, limiter);

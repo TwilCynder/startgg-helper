@@ -44,7 +44,7 @@ export class SGGHelperClient {
             throw "Empty response"
         }
         if (!json.data){
-            throw new GraphQLError(json, reqBody);
+            throw new GraphQLError(response, json, reqBody);
         }
     
         return json.data;

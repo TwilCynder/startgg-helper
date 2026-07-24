@@ -1,4 +1,4 @@
-import { deep_get } from "../dist/bundle.js";
+import { deep_get } from "./dist/bundle.js";
 
 export function processData(result, key){
     return (result && result[key]) ?  result[key] : null;

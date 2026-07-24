@@ -1,5 +1,4 @@
-import { Query } from "../../dist/bundle.js";
-import { StartGGDelayQueryLimiter } from "../../dist/bundle.js";
+import { Query } from "../dist/bundle.js";
 import { truthyValidator } from "../testUtil.js";
 
 const schema = `
@@ -17,8 +16,6 @@ const schema = `
 let query = new Query(schema, 3);
 async function runTest(client, limiter){
     try {
-        limiter = limiter || new StartGGDelayQueryLimiter();
-
         let promises = [];
         for (let i = 0; i < 50; i++){
             for (let j = 0; j < 2; j++){

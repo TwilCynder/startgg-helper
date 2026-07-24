@@ -1,4 +1,4 @@
-import { Query } from "../../dist/bundle.js";
+import { Query } from "../dist/bundle.js";
 
 let query = new Query(`
     query BogusTest ($slug: String) {

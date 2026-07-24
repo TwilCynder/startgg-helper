@@ -1,3 +1,4 @@
 node_modules
 settings.json
-browser/test/src/list.json
+browser/test/site/list.html
+browser/test/site/src/list.json

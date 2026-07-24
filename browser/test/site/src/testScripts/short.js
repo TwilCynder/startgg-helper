@@ -1,4 +1,4 @@
-import { Query } from "../../dist/bundle.js";
+import { Query } from "../dist/bundle.js";
 import { processData, truthyValidator } from "../testUtil.js";
 
 const schema = `
