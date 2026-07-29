@@ -11,8 +11,10 @@ jobs:
             -   name:
                 shell: bash
                 run: |
+                    chmod a+x _testCommon/jest.sh
+                    (cd node; npm install)
                     cd base
-                    npm install
-                    chmod a+x test/jest.sh
+                    npm install --include dev
                     npm config set script-shell bash
-                    npm test -- -s
+                    npm ls
+                    TOKEN=${{secrets.TEST_STARTGG_API_TOKEN}} npm test -- -s

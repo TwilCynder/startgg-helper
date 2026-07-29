@@ -8,6 +8,7 @@ import { ArgumentsManager } from "@twilcynder/arguments-parser"
 import { testUpsets } from "./testScripts/upsets.js";
 import { testPlacementSuffix } from "./testScripts/tournamentUtil.js";
 import { testBadRequest } from "./testScripts/startggError.js";
+import { StartGGDelayQueryLimiter } from "../src/queryLimiter.js";
 
 let {short, long, paginated, paginated_complex, upsets, placement_suffix, error} = new ArgumentsManager()
     .setParameters({guessLowDashes: true})
@@ -22,32 +23,32 @@ let {short, long, paginated, paginated_complex, upsets, placement_suffix, error}
     .parseProcessArguments()
 
 let client = await createClientAuto();
-console.log(client);
+let limiter = await StartGGDelayQueryLimiter();
 
 if (short){
     console.log("Testing : single query");
-    console.log(await testShort(client)); 
+    console.log(await testShort(client, limiter)); 
 }
 
 if (long){
-    console.log("Testing : 100ish queries, with delay-based limiter");
-    console.log(await testLong(client)); 
+    console.log("Testing : 100ish queries");
+    console.log(await testLong(client, limiter)); 
 }
 
 if (paginated){
     console.log("Testing : paginated query");
-    console.log(await testPaginated(client)); 
+    console.log(await testPaginated(client, limiter)); 
 }
 
 if (paginated_complex){
     console.log("Testing : paginated query");
-    let res = await testPaginatedComplex(client);
+    let res = await testPaginatedComplex(client, limiter);
     console.log(res, deep_get(res, "event.sets.nodes")); 
 }
 
 if (upsets){
     console.log("Testing : upsets calculation");
-    let [res, expected] = await testUpsets(client);
+    let [res, expected] = await testUpsets(client, limiter);
     console.log(res);
     console.log(expected);
 }
@@ -61,6 +62,8 @@ if (placement_suffix){
 
 if (error){
     console.log("Testing : API error translation");
-    let error = await testBadRequest(client);
+    let error = await testBadRequest(client, limiter);
     console.log(error);
 }
+
+limiter.stop();

@@ -56,8 +56,7 @@ let expected = [
     [0,0],
 ]
 
-export async function testUpsets(client){
-   let limiter = new StartGGDelayQueryLimiter();
+export async function testUpsets(client, limiter){
 
     try {
         let promises = [];

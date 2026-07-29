@@ -2,10 +2,10 @@ import { Query } from "../../src/query.js";
 import { basicSchema } from "./commonRequests.js";
 
 let query = new Query(basicSchema, 0);
-export async function testBadRequest(client){
+export async function testBadRequest(client, limiter){
     let error = null;
     try {
-        await query.execute(client, {slug: "+not+a/slug/"});
+        await query.execute(client, {slug: "+not+a/slug/"}, limiter);
     } catch (err){
         error = err;
     }
