@@ -12,23 +12,33 @@ try {
     console.error("Could not load settings from settings.json. Reason :", err);
 }
 
+function displayMessage(msg){
+    document.getElementById("message").innerHTML += msg;
+}
+
 console.log("Token :", token)
 
 if (token){
-    let client = new RateLimitingSGGHelperClient("Ta grand mère");
+    let client = new RateLimitingSGGHelperClient(token);
     let limiter = new StartGGDelayQueryLimiter();
     console.log(client)
-    try {
-        const searchParams = new URLSearchParams(window.location.search)
-        let testName = searchParams.get("test");
+    const searchParams = new URLSearchParams(window.location.search)
+    let testName = searchParams.get("test");
         
-        await testName ?
-            runSingleTest(testName, client, limiter) :
-            runAll(client, limiter);
-
-        // await runAll(client, limiter);
+    try {
+        if (testName){
+            displayMessage(`Running test "${testName}" : `);
+            await runSingleTest(testName, client, limiter);
+        } else {
+            displayMessage("Running all tests : ");
+            await runAll(client, limiter);
+        }
     } catch (err){
-        console.error(err); 
+        displayMessage(`<span class="red">Error : ${err.message}</span`)
     }
+
+
+    // await runAll(client, limiter);
+
 
 }

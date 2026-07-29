@@ -15,25 +15,19 @@ const schema = `
 
 let query = new Query(schema, 3);
 async function runTest(client, limiter){
-    try {
-        let promises = [];
-        for (let i = 0; i < 50; i++){
-            for (let j = 0; j < 2; j++){
-                promises.push(query.execute(client, {
-                    slug: `tournament/stock-o-clock-${i}/event/1v1-ultimate`,
-                    page: j,
-                    perPage: 10
-                }, limiter));
-            }
+    let promises = [];
+    for (let i = 0; i < 50; i++){
+        for (let j = 0; j < 2; j++){
+            promises.push(query.execute(client, {
+                slug: `tournament/stock-o-clock-${i}/event/1v1-ultimate`,
+                page: j,
+                perPage: 10
+            }, limiter));
         }
-        let result = await Promise.all(promises);
-        limiter.stop();
-        return result;
-    } catch (err){
-        console.error(err);
-        return null;
     }
-
+    let result = await Promise.all(promises);
+    limiter.stop();
+    return result;
 }
 
 export default {

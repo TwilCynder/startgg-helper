@@ -27,7 +27,7 @@ function logSuccess(id, test){
  * @returns 
  */
 function testLogDiv(test, id){
-    return `<tr class="test-log" id="${id}"><td class="test-name">${test.name}</td><td class="result">Pending ...</td></tr>`
+    return `<tr class="test-log" id="${id}"><td class="test-name"><a class="ninja-link" href="index.html?test=${id}">${test.name}</a></td><td class="result">Pending ...</td></tr>`
 }
 
 /**
@@ -35,7 +35,7 @@ function testLogDiv(test, id){
  * @param {Test} test 
  */
 async function runTest(test, id, client, limiter){
-    console.log("Running test", test.name)
+    console.log("Running test", test.name);
     let res;
     try {
         let val = await test.runTest(client, limiter);
@@ -57,7 +57,7 @@ async function runTest(test, id, client, limiter){
 
 export async function runSingleTest(name, client, limiter){
     const test = await loadScript(name);
-    document.getElementById("content").innerHTML = testLogDiv(test, name);
+    document.getElementById("results").innerHTML = testLogDiv(test, name);
     const res = await runTest(test, name, client, limiter);
     console.log("Result :", res);
 }
@@ -66,7 +66,7 @@ export async function runAll(client, limiter){
     const tests = await loadAll();
 
     for (const [name, test] of tests){
-        document.getElementById("content").innerHTML = tests.map(([name, test]) => testLogDiv(test, name)).join("");
+        document.getElementById("results").innerHTML = tests.map(([name, test]) => testLogDiv(test, name)).join("");
     }
 
     let results = []
