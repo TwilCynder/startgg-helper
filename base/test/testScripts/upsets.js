@@ -56,7 +56,7 @@ let expected = [
     [0,0],
 ]
 
-export async function testUpsets(client, limiter){
+export default async function testUpsets(client, limiter){
 
     try {
         let promises = [];

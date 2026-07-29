@@ -1,4 +1,57 @@
 import { deep_get } from "../src/jsUtil.js";
+import { ArgumentsManager } from "@twilcynder/arguments-parser";
+import { createClientAuto } from "./client.js";
+import { StartGGDelayQueryLimiter } from "../src/queryLimiter.js";
+
+//-------- Configuring tests
+
+const defaultUser = (res) => console.log(res);
+const tc = (path, shortSwitch, dest, name, userFunction = defaultUser) => ({path, shortSwitch, dest, name, userFunction});
+const testsConfig = [
+    tc("./testScripts/short.js", "s", "short", "single query"),
+    tc("./testScripts/long.js", "l", "long", "100ish queries"),
+    tc("./testScripts/paginated.js", "p", "paginated", "paginated query"),
+    tc("./testScripts/paginatedComplex.js", "P", "paginated-complex", "complex paginated query", res => console.log(deep_get(res, "event.sets.nodes"))), 
+    tc("./testScripts/startggError.js", "e", "error", "API error translation"),
+    tc("./testScripts/upsets.js", "u", "upsets", "upsets calculation", ([res, expected]) => {console.log(res, expected)}),
+    tc("./testScripts/placementSuffix.js", "S", "placement-suffix", "placement suffixes", ([res, expected]) => {
+        console.log(res.join("\t"));
+        console.log(expected.join("\t"));
+    })
+];
+
+//-------- CLI (config + parse)
+
+const argumentsManager = new ArgumentsManager()
+for (const test of testsConfig){
+    argumentsManager.addSwitch(["-" + test.shortSwitch, "--" + test.dest], {dest: test.dest});
+}
+argumentsManager.enableHelpParameter();
+
+const args = argumentsManager.parseProcessArguments();
+
+//-------- Loading tests
+/** @type {[ReturnType<tc>, (client, limiter) => Promise<any>][]} */
+const tests = await Promise.all(testsConfig
+    .filter(test => args[test.dest])
+    .map(async test => [test, await import(test.path).then(module => module.default)]
+));
+
+//-------- Running tests
+
+const client = await createClientAuto();
+const limiter = new StartGGDelayQueryLimiter();
+
+for (const [test, testFunction] of tests){
+    console.log("Testing :", test.name);
+    const res = await testFunction(client, limiter);
+    test.userFunction(res);
+}
+
+limiter.stop();
+
+/*
+import { deep_get } from "../src/jsUtil.js";
 import { createClientAuto } from "./client.js";
 import { testLong } from "./testScripts/long.js";
 import { testPaginated } from "./testScripts/paginated.js";
@@ -6,7 +59,7 @@ import { testPaginatedComplex } from "./testScripts/paginatedComplex.js";
 import { testShort } from "./testScripts/short.js";
 import { ArgumentsManager } from "@twilcynder/arguments-parser"
 import { testUpsets } from "./testScripts/upsets.js";
-import { testPlacementSuffix } from "./testScripts/tournamentUtil.js";
+import { testPlacementSuffix } from "./testScripts/placementSuffix.js";
 import { testBadRequest } from "./testScripts/startggError.js";
 import { StartGGDelayQueryLimiter } from "../src/queryLimiter.js";
 
@@ -67,3 +120,4 @@ if (error){
 }
 
 limiter.stop();
+*/

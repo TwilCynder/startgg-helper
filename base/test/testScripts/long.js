@@ -13,7 +13,7 @@ const schema = `
 `
 
 let query = new Query(schema, 3);
-export async function testLong(client, limiter){
+export default async function testLong(client, limiter){
     try {
 
         let promises = [];

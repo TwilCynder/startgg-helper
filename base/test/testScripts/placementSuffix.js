@@ -1,6 +1,6 @@
 import { getPlacementSuffix } from "../../src/tournamentUtil.js";
 
-export function testPlacementSuffix(){
+export default function testPlacementSuffix(){
     return [
         [0, 1, 2, 3, 4, 9, 10, 11, 12, 13, 20, 21, 22, 23, 25, 31, 37, 95, 100, 101, 102, 103, 113, 151, 154]
             .map(placement => placement + getPlacementSuffix(placement)), 
