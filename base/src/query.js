@@ -146,11 +146,13 @@ export class Query {
         while (true){
             if (result.length >= maxElements) break;
 
+            //---- Querying one page from the API
             console.log("Querying page", params[pageParamName], `(${result.length} elements loaded)`);
             data = await this.execute(client, params, limiter, silentErrors, maxTries, logsOverride);
 
             if (!data) throw (this.#getLog("error", params, logsOverride) ?? "Request failed.") + "(in paginated execution, at page " + params[pageParamName] + ")";
 
+            //---- Finding local result in response
             let connection = deep_get(data, connectionPathInQuery);
 
             if (!connection) {
@@ -162,43 +164,27 @@ export class Query {
 
             let localResult = connection.nodes;
 
-            if (connection.pageInfo && connection.pageInfo.totalPages){ //if the query contains pageInfo we use that to determine if we're at the last page
-                let totalPages = connection.pageInfo.totalPages;
-                if (currentPage >= totalPages) {
-                    if (config.callback){
-                        let cbRes = config.callback(localResult, result, currentPage)
 
-                        if (cbRes instanceof PageResult){
-                            if (cbRes.result){ //If the user gives us a result we take it ofc
-                                result = cbRes.result;
-                            } else {
-                                result = result.concat(localResult);
-                            }
-                        } else if (cbRes && cbRes !== true) { //cbres isn't one that means something loop-control-related (it's over anyways so we don't care!)
-                            result = result.concat(cbRes);
-                        }
-                    } else {
-                        result = result.concat(localResult);
-                    }
-                    break;
-                }
-            } else { //if not, we only know when we get an empty page
-                if (localResult.length < 1) break;
+            //---- First end condition : page is empty, we can leave now
+            let totalPages = connection.pageInfo && connection.pageInfo.totalPages;
+            if (localResult.length < 1) {
+                break;
             }
 
+            //---- Processing new page (with or without callback)
             if (config.callback){
-                let cbRes = config.callback(localResult, result, currentPage);
+                let cbRes = config.callback(localResult, result, currentPage, totalPages);
 
                 if (cbRes instanceof PageResult){
                     if (cbRes.result){ //If the user gives us a result we take it ofc
                         result = cbRes.result;
-                    } else {
+                    } else {  //Else it means they wanted the local result unchanged
                         result = result.concat(localResult);
                     }
-                    if (cbRes.stop){
+                    if (cbRes.stop){ //User asked to stop, simplest end condition
                         break;
                     }
-                } else if (!cbRes) { //"normal case" : basic callback that doesn't touch the flow of the pexecution, we concat and increment normally
+                } else if (!cbRes) { //no returned value : basic callback that doesn't touch the flow of the pexecution, we concat and increment normally
                     result = result.concat(localResult)
                 } else if (cbRes === true){ //callback is asking us to stop by returning true
                     break;
@@ -206,18 +192,24 @@ export class Query {
                     result = result.concat(cbRes);
                 }
 
-            } else {
+            } else { // No callback : local result added normally
                 result = result.concat(localResult);
             }
 
-            currentPage++;
+            //---- Second end condition : based on totalPages, we only leave after processing the page
+            if (totalPages && currentPage >= totalPages) {
+                break;
+            } 
 
+            //---- Loop code
+            currentPage++;
             params[pageParamName] = currentPage;
 
             if (delay)
                 await new Promise(r => setTimeout(r, delay));
         }
 
+        //---- Post-processing result
         if (maxElements) result = result.slice(0, maxElements);
 
         if (config.includeWholeQuery == Query.IWQModes.DUPLICATE || config.includeWholeQuery == Query.IWQModes.INLINE){

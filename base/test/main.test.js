@@ -28,10 +28,11 @@ test("Paginated query (sets)", async () => {
 }, 60000);
 
 test("Paginated query (sets) with advanced options", async () => {
-    let res = await testPaginatedComplex(client, limiter);
-    expect(res).toBeTruthy();
-    expect(res.event.tournament).toBeTruthy();
-    expect(res.event.sets.nodes.length).toBe(100);
+    let [res, expected] = await testPaginatedComplex(client, limiter);
+    expect(res.data).toBeTruthy(); expect(res.progressLogs).toBeTruthy();
+    expect(res.data.event.tournament).toBeTruthy();
+    expect(res.data.event.sets.nodes.length).toBe(expected.length);
+    expect(res.progressLogs).toStrictEqual(expected.progressLogs);
 }, 60000);
 
 

@@ -1,3 +1,4 @@
+#!node
 import { deep_get } from "../src/jsUtil.js";
 import { ArgumentsManager } from "@twilcynder/arguments-parser";
 import { createClientAuto } from "./client.js";
@@ -17,7 +18,7 @@ const testsConfig = [
     tc("./testScripts/short.js", "s", "short", "single query"),
     tc("./testScripts/long.js", "l", "long", "100ish queries"),
     tc("./testScripts/paginated.js", "p", "paginated", "paginated query"),
-    tc("./testScripts/paginatedComplex.js", "P", "paginated-complex", "complex paginated query", res => console.log(deep_get(res, "event.sets.nodes"))), 
+    tc("./testScripts/paginatedComplex.js", "P", "paginated-complex", "complex paginated query", ([res, expected]) => console.log(deep_get(res.data, "event.sets.nodes").length, res.progressLogs, expected.length, expected.progressLogs)), 
     tc("./testScripts/startggError.js", "e", "error", "API error translation"),
     tc("./testScripts/upsets.js", "u", "upsets", "upsets calculation", withExpectedUser),
     tc("./testScripts/deep_get.js", "d", "deep-functions", "deep get/set functions", (results) => results.map(([res, expected]) => console.log(log(res), "|", log(expected)))),
