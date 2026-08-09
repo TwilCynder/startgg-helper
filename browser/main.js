@@ -1,5 +1,5 @@
 import { Query } from "startgg-helper";
-import { GraphQLError } from "./error";
+import { GraphQLError } from "./error.js";
 export * from "startgg-helper"
 
 export async function loadQuery(url, maxTries = null){
