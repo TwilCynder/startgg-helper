@@ -11,9 +11,60 @@ function processObjectPath(path){
     return path;
 }
 
+
 /**
- * Traverses nested object following a path and returns what's at the end, without throwing an error if an intermediary object-property is not found.  
- * The "path" argument works like a JS object access expression, starting with a property from the initial object (first parameter)   
+ * Traverses nested objects using a sequence of property keys and returns the last property : for each string specified in the *names* parameter, take the property of *obj* with that name, treat it as the new *obj* then moves on to the next ; the last property is returned. If any object does not have the specified property during the sequence, the loop stops and *def* is returned. However, if any intermediary property exists but is not indexable, an error will occur.
+ * 
+ * ```js
+ * const obj = {a: {b: {c: 12}}};
+ * deep_get_raw(obj, null, "a", "b", "c"); //returns 12, same as obj.a.b.c
+ * ```
+ * 
+ * Arrays indexes are treated just as any other property key : 
+ * ```js
+ * const obj = {a: [{}, {}, {b: 12}]};
+ * deep_get_raw(obj, null, "a", 2, "b"); //returns 12
+ * ```
+ * 
+ * @param {any} obj 
+ * @param {any} def 
+ * @param  {...PropertyKey} names 
+ */
+export function deep_get_raw(obj, def = null, ...names){
+    for (const name of names){
+        obj = obj[name];
+        if (obj == undefined || obj == null) return def;
+    };
+    return obj;
+}
+
+/**
+ * Traverses nested objects using a sequence of property keys, just like {@link deep_get_raw} ; the last property key in the last object is set to *value*.
+ * ```js
+ * const obj = {a: {b: {c: 12}}}; //obj.a.b.c is 12
+ * deep_set_raw(obj, 15, "a", "b", "c");
+ * obj.a.b.c; //is now 15
+ * ```
+ * @param {Object} obj 
+ * @param {any} value 
+ * @param  {...PropertyKey} names 
+ * @returns 
+ */
+export function deep_set_raw(obj, value, ...names){
+    let finalName = names.pop();
+    for (let elt of names){
+        obj = obj[elt];
+        if (!(obj instanceof Object)){
+            return false;
+        }
+    }
+    obj[finalName] = value;
+    return true;
+}
+
+/**
+ * Traverses nested objects using a sequence of property keys (provided as a single string with property names separated by dots, just like a JS-style object access expression) and returns the last property : for each name in the path, take the property of *obj* with that name, treat it as the new *obj* then moves on to the next ; the last property is returned. property keys are provided as a "path" mimickng a JS object access expression, with  If any object does not have the specified property during the sequence, the loop stops and *def* is returned. However, if any intermediary property exists but is not indexable, an error will occur.
+ * 
  * ```js
  * const obj = {a: {b: {c: 12}}};
  * obj.a.b.c; //value : 12
@@ -39,19 +90,11 @@ function processObjectPath(path){
  * @param {*} def Value returned if the path cannot be followed to the end
  */
 export function deep_get(obj, path, def = null){
-    //https://stackoverflow.com/a/8817473
-    path = processObjectPath(path);
-
-    for (var i=0, len=path.length; i<len; i++){
-        obj = obj[path[i]];
-        if (obj == undefined) return def;
-    };
-    return obj;
+    return deep_get_raw(obj, def, ...processObjectPath(path));
 };
 
 /**
- * Traverses nest objects following a path and sets the final property to a given vallue.  
- * Traversing works the same as with deep_get()
+ * Traverses nested objects using a path of property keys, just like {@link deep_get} ; the last property key in the last object is set to *value*.
  * @param {{}} obj 
  * @param {string} path 
  * @param {*} value 

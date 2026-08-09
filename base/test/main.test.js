@@ -6,6 +6,8 @@ import testPaginatedComplex from "./testScripts/paginatedComplex.js";
 import testShort from "./testScripts/short.js";
 import testPlacementSuffix from "./testScripts/placementSuffix.js";
 import testUpsets from "./testScripts/upsets.js"; 
+import testDeepFunctions from "./testScripts/deep_get.js";
+import { transposeMatrix } from "./testResultUtil.js";
 
 console.log("Quick mode :", !!process.env.QUICK)
 
@@ -41,5 +43,11 @@ test("Calculate upset factor on 8 sets across 2 events", async () => {
 
 test("Placement suffixes", () => {
     let [res, expected] = testPlacementSuffix();
+    expect(res).toStrictEqual(expected);
+})
+
+test("Deep get/set functions", () => {
+    let results = testDeepFunctions();
+    let [res, expected] = transposeMatrix(results);
     expect(res).toStrictEqual(expected);
 })

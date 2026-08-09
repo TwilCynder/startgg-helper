@@ -2,10 +2,16 @@ import { deep_get } from "../src/jsUtil.js";
 import { ArgumentsManager } from "@twilcynder/arguments-parser";
 import { createClientAuto } from "./client.js";
 import { StartGGDelayQueryLimiter } from "../src/queryLimiter.js";
+import { inspect } from "util"
 
 //-------- Configuring tests
 
+function log(val){
+    return inspect(val, {colors: true, showHidden: false, depth: null, breakLength: Infinity, compact: true})
+}
+
 const defaultUser = (res) => console.log(res);
+const withExpectedUser = ([res, expected]) => console.log(res, expected);
 const tc = (path, shortSwitch, dest, name, userFunction = defaultUser) => ({path, shortSwitch, dest, name, userFunction});
 const testsConfig = [
     tc("./testScripts/short.js", "s", "short", "single query"),
@@ -13,7 +19,8 @@ const testsConfig = [
     tc("./testScripts/paginated.js", "p", "paginated", "paginated query"),
     tc("./testScripts/paginatedComplex.js", "P", "paginated-complex", "complex paginated query", res => console.log(deep_get(res, "event.sets.nodes"))), 
     tc("./testScripts/startggError.js", "e", "error", "API error translation"),
-    tc("./testScripts/upsets.js", "u", "upsets", "upsets calculation", ([res, expected]) => {console.log(res, expected)}),
+    tc("./testScripts/upsets.js", "u", "upsets", "upsets calculation", withExpectedUser),
+    tc("./testScripts/deep_get.js", "d", "deep-functions", "deep get/set functions", (results) => results.map(([res, expected]) => console.log(log(res), "|", log(expected)))),
     tc("./testScripts/placementSuffix.js", "S", "placement-suffix", "placement suffixes", ([res, expected]) => {
         console.log(res.join("\t"));
         console.log(expected.join("\t"));
