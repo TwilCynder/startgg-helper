@@ -1,3 +1,4 @@
+#!node
 import fs from "fs/promises"
 
 
