@@ -64,13 +64,13 @@ export class Query {
      * @param {{[varName: string]: value}} params 
      * @param {number} tries How many tries in are we 
      * @param {TimedQuerySemaphore} limiter 
-     * @param {boolean} silentErrors legacy parameter, does nothing
+     * @param {boolean} silent if true, doesn't log
      * @param {number} maxTries Overrides this.#maxTries
      */
-    async #execute_(client, params, tries, limiter = null, silentErrors = false, maxTries = null, logsOverride = null){
+    async #execute_(client, params, tries, limiter = null, silent = false, maxTries = null, logsOverride = null){
         maxTries = maxTries || this.#maxTries || 0
 
-        console.log((this.#getLog("query", params, logsOverride) || "Querying ...") + " Try " + (tries + 1));
+        if (!silent) console.log((this.#getLog("query", params, logsOverride) || "Querying ...") + " Try " + (tries + 1));
         try {
             let data = await ( limiter ? limiter.execute(client, this.#schema, params) : client.request(this.#schema, params));
             
@@ -78,11 +78,11 @@ export class Query {
         } catch (e) {
             
             if (tries >= maxTries) {
-                console.error("Maximum number of tries reached. Throwing.", e);
+                if (!silent) console.error("Maximum number of tries reached. Throwing.", e);
                 throw e;
             }
-            console.error((this.#getLog("error", params, logsOverride) || "Request failed.") + ` Retrying (try ${tries + 1}). Error : `, e);
-            return this.#execute_(client, params, tries + 1, limiter, silentErrors, maxTries, logsOverride);
+            if (!silent) console.error((this.#getLog("error", params, logsOverride) || "Request failed.") + ` Retrying (try ${tries + 1}). Error : `, e);
+            return this.#execute_(client, params, tries + 1, limiter, silent, maxTries, logsOverride);
         }
     }
 
@@ -108,7 +108,7 @@ export class Query {
     /** @typedef {(localResult: T[], currentResult: T[], pageIndex: number) => (T[]|PageResult|boolean)?} PageCallback*/
 
     /**
-     * Queries a whole paginated collection (of a *Connection type). See the start.gg API doc or this package's documentation for more info about pagniated collections. This is done through executing the query repeatedly while increasing the page index each time. 
+     * Queries a whole paginated collection (of a *Connection type). See the start.gg API doc or this package's documentation for more info about pagniated collections. This is done through executing the query repeatedly, while increasing the page index (through a configurable graphql variable) each time. 
      * The target collection must be pointed to by the "path" argument, and will be agregated in a single array. The schema must have a variable (whose name can be specified in parameters) that is used as the page index of the paginated field.
      * 
      * 
@@ -116,17 +116,23 @@ export class Query {
      * @param {{[varName: string]: value}} params GraphQL variables ; does not include the page index variable. 
      * @param {string} connectionPathInQuery JSON path to the paginated collection that must be aggregated in the query (JSON path : property names separated by dots, see deep_get())
      * @param {TimedQuerySemaphore} limiter A request limiter object; see TimedQuerySemaphore
-     * @param {{pageParamName?: string, perPageParamName?: string, perPage?: number, startingPage: number, initialData: any, delay?: number, maxElements?: number, includeWholeQuery?: number, callback: PageCallback?}} config 
-     * @param  config.pageParamName name of the variable representing the page index. This variable must exist in your query, and be used as an argument in a paginated collection field
-     * @param  config.delay number of miliseconds to wait for between each query. No delay if absent.
-     * @param  config.maxElements if present, queries will stop once this many elements have been fetched
-     * @param  config.includeWholeQuery controls the structure of the result. If 0, only an array is returned, if 1 the whole query is returned with the `nodes` field replaced with the full array, if 3 this functions returns a tuple containing the aggregated collection and the rest of the query, 2 does both 1 and 3. 
-     * @param config.callback a callback function called for each fetched page, with the page elements and the page index. It should return an array itself, which will be treated as the actual page (allowing users to transform the pages on the fly) ; if it does not, the paginated execution is stopped.
-     * @param {boolean} silentErrors No effect, exists only for legacy purposes
+     * @param {Object} config 
+     * @param {string} config.pageParamName name of the variable representing the page index. This variable must exist in your query, and be used as an argument in a paginated collection field
+     * @param {string} config.perPageParamName same as pageParamName, for the variable representing page size - note that you may pass that as a normal variable yourself instead of configuring it here, both work.
+     * @param {number} config.perPage value passed to the page size variable - see perPageParamName
+     * @param {number} config.startingPage page to start at (skipping previous pages). /!\ Page indexes start at 1
+     * @param {any[]} config.initialData array of elements serving as initial value of the result array, i.e. these elements will be present in the result
+     * @param {number} config.delay number of miliseconds to wait for between each query. No delay if absent (preferable if using a limiter)
+     * @param {number} config.maxElements if present, queries will stop once at least this many elements have been fetched
+     * @param {number} config.includeWholeQuery controls the structure of the result. If 0, only an array is returned, if 1 the whole query is returned with the `nodes` field replaced with the full array, if 3 this functions returns a tuple containing the aggregated collection and the rest of the query, 2 does both 1 and 3. 
+     * @param {PageCallback?} config.callback a callback function called for each fetched page, with the page elements and the page index. It should return an array itself, which will be treated as the actual page (allowing users to transform the pages on the fly) ; if it does not, the paginated execution is stopped.
+     * @param {boolean} config.silent if true, this function will not log progress to stdout. This does not affect the logs queries normally do (use the silentQueries param for that)
+     * @param {boolean} silentQueries Silences normal query logs (this is different from config.silent)
      * @param {number} maxTries 
      * @returns See config.includeWholeQuery
      */
-    async executePaginated(client, params, connectionPathInQuery, limiter = null, config = {}, silentErrors = false, maxTries = null){
+    async executePaginated(client, params, connectionPathInQuery, limiter = null, config = {}, silentQueries = false, maxTries = null){
+        //includeWholeQuery?: number, callback: PageCallback?, silent: boolean
         let result = config.initialData ?? [];
         const pageParamName = config.pageParamName ?? "page";
         const perPageParamName = config.perPageParamName ?? "perPage";
@@ -147,8 +153,8 @@ export class Query {
             if (result.length >= maxElements) break;
 
             //---- Querying one page from the API
-            console.log("Querying page", params[pageParamName], `(${result.length} elements loaded)`);
-            data = await this.execute(client, params, limiter, silentErrors, maxTries, logsOverride);
+            if (!config.silent) console.log("Querying page", params[pageParamName], `(${result.length} elements loaded)`);
+            data = await this.execute(client, params, limiter, silentQueries, maxTries, logsOverride);
 
             if (!data) throw (this.#getLog("error", params, logsOverride) ?? "Request failed.") + "(in paginated execution, at page " + params[pageParamName] + ")";
 

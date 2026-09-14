@@ -20,9 +20,9 @@ export default async function testPaginatedComplex(client, limiter){
         includeWholeQuery: Query.IWQModes.INLINE,
         maxElements: 100, 
         callback: (localresult, _currentResult, page, totalPages) => {
-            //console.log("Page", i, ":", localresult);
             progressLogs.push([localresult.length, page, totalPages]);
-        }
+        },
+        silent: true
     });
     return [{data, progressLogs}, {length: 100, progressLogs: [
         [10,2,16],
